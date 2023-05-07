@@ -16,8 +16,6 @@ class MainWindow (QMainWindow):
         tool_bar = ToolBar(parent=self)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, tool_bar)
 
-
-
         self.ne = NameExp(parent=self)
         self.ne.setGeometry(0, 25, 800, 600)
 
