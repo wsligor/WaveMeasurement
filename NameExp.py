@@ -1,8 +1,9 @@
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
-
 from PySide6.QtSql import QSqlQueryModel
+
+from Category import dlgCategory
 
 
 class Model(QSqlQueryModel):
@@ -139,8 +140,8 @@ class dlgAddExp(QDialog):
         print(self.geometry())
 
     def btnAddCategory_clicked(self):
-        diaCategory = dlgCategory()
-        diaCategory.exec()
+        dlg_category = dlgCategory()
+        dlg_category.exec()
 
 
     @property
@@ -208,24 +209,3 @@ class dlgAddExp(QDialog):
         else:
             return result
 
-class dlgCategory(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        btnAddCategory = QToolButton(parent=self)
-        btnAddCategory.setText('+')
-        btnEditCategory = QToolButton(parent=self)
-        btnEditCategory.setText('...')
-        btnDelCategory = QToolButton(parent=self)
-        btnDelCategory.setText('-')
-
-        layHButton = QHBoxLayout()
-        layHButton.addWidget(btnAddCategory)
-        layHButton.addWidget(btnEditCategory)
-        layHButton.addWidget(btnDelCategory)
-
-        tvCategory = QTableView(parent=self)
-
-        layV = QVBoxLayout(self)
-        layV.addLayout(layHButton)
-        layV.addWidget(tvCategory)
