@@ -67,7 +67,31 @@ class dlgAddExp(QDialog):
         self.__edTemp = QLineEdit(parent=self)
 
         lblCuvvete = QLabel('Кювета', parent=self)
-        self.edCuvvete = QLineEdit(parent=self)
+        self.__edCuvvete = QLineEdit(parent=self)
+
+        layHDateNumber = QHBoxLayout()
+        layVDate = QVBoxLayout()
+        layVDate.addWidget(lblDate)
+        layVDate.addWidget(self.__deDate)
+        layHDateNumber.addLayout(layVDate)
+        layVNumber = QVBoxLayout()
+        layVNumber.addWidget(lblNumber)
+        layVNumber.addWidget(self.__edNumber)
+        layHDateNumber.addLayout(layVNumber)
+
+        layHCTC = QHBoxLayout()
+        layVCount = QVBoxLayout()
+        layVCount.addWidget(lblCount)
+        layVCount.addWidget(self.__edCount)
+        layHCTC.addLayout(layVCount)
+        layVTemp = QVBoxLayout()
+        layVTemp.addWidget(lblTemp)
+        layVTemp.addWidget(self.__edTemp)
+        layHCTC.addLayout(layVTemp)
+        layVCuvvete = QVBoxLayout()
+        layVCuvvete.addWidget(lblCuvvete)
+        layVCuvvete.addWidget(self.__edCuvvete)
+        layHCTC.addLayout(layVCuvvete)
 
         lblDescription = QLabel('Описание:', parent=self)
         self.__teDescriptin = QTextEdit(parent=self)
@@ -89,10 +113,7 @@ class dlgAddExp(QDialog):
         layHCroup.addWidget(self.__cbGroup)
         layHCroup.addWidget(btnAddGroup)
 
-        layV.addWidget(lblDate)
-        layV.addWidget(self.__deDate)
-        layV.addWidget(lblNumber)
-        layV.addWidget(self.__edNumber)
+        layV.addLayout(layHDateNumber)
         layV.addWidget(lblCategory)
         layV.addLayout(layHCategory)
         layV.addWidget(lblGroup)
@@ -101,12 +122,9 @@ class dlgAddExp(QDialog):
         layV.addWidget(self.__edName)
         layV.addWidget(lblSubstance)
         layV.addWidget(self.__edSubstance)
-        layV.addWidget(lblCount)
-        layV.addWidget(self.__edCount)
-        layV.addWidget(lblTemp)
-        layV.addWidget(self.__edTemp)
-        layV.addWidget(lblCuvvete)
-        layV.addWidget(self.edCuvvete)
+
+        layV.addLayout(layHCTC)
+
         layV.addWidget(lblDescription)
         layV.addWidget(self.__teDescriptin)
 
@@ -115,10 +133,11 @@ class dlgAddExp(QDialog):
         layH.addWidget(btnCancel)
         layH.addWidget(btnFileOpen)
 
-
         layV.addLayout(layH)
 
         btnCancel.clicked.connect(self.reject)
+
+        print(self.geometry())
 
     @property
     def number(self):
