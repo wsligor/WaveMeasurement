@@ -66,8 +66,20 @@ class dlgAddExp(QDialog):
         lblTemp = QLabel('Температура:', parent=self)
         self.__edTemp = QLineEdit(parent=self)
 
-        lblCuvvete = QLabel('Кювета', parent=self)
+        lblCuvete = QLabel('Кювета', parent=self)
         self.__edCuvvete = QLineEdit(parent=self)
+
+        lblDescription = QLabel('Описание:', parent=self)
+        self.__teDescriptin = QTextEdit(parent=self)
+
+        btnAddCategory = QToolButton(parent=self)
+        btnAddCategory.setText('...')
+        btnAddGroup = QToolButton(parent=self)
+        btnAddGroup.setText('...')
+
+        btnOk = QPushButton('Ok',parent=self)
+        btnCancel = QPushButton('Отмена', parent=self)
+        btnFileOpen = QPushButton('Файл', parent=self)
 
         layHDateNumber = QHBoxLayout()
         layVDate = QVBoxLayout()
@@ -79,32 +91,6 @@ class dlgAddExp(QDialog):
         layVNumber.addWidget(self.__edNumber)
         layHDateNumber.addLayout(layVNumber)
 
-        layHCTC = QHBoxLayout()
-        layVCount = QVBoxLayout()
-        layVCount.addWidget(lblCount)
-        layVCount.addWidget(self.__edCount)
-        layHCTC.addLayout(layVCount)
-        layVTemp = QVBoxLayout()
-        layVTemp.addWidget(lblTemp)
-        layVTemp.addWidget(self.__edTemp)
-        layHCTC.addLayout(layVTemp)
-        layVCuvvete = QVBoxLayout()
-        layVCuvvete.addWidget(lblCuvvete)
-        layVCuvvete.addWidget(self.__edCuvvete)
-        layHCTC.addLayout(layVCuvvete)
-
-        lblDescription = QLabel('Описание:', parent=self)
-        self.__teDescriptin = QTextEdit(parent=self)
-
-        btnAddCategory = QToolButton(parent=self)
-        btnAddGroup = QToolButton(parent=self)
-
-        btnOk = QPushButton('Ok',parent=self)
-        btnCancel = QPushButton('Отмена', parent=self)
-        btnFileOpen = QPushButton('Файл', parent=self)
-
-        layV = QVBoxLayout(self)
-
         layHCategory = QHBoxLayout()
         layHCategory.addWidget(self.__cbCategory)
         layHCategory.addWidget(btnAddCategory)
@@ -112,6 +98,22 @@ class dlgAddExp(QDialog):
         layHCroup = QHBoxLayout()
         layHCroup.addWidget(self.__cbGroup)
         layHCroup.addWidget(btnAddGroup)
+
+        layHCountTempCuvvete = QHBoxLayout()
+        layVCount = QVBoxLayout()
+        layVCount.addWidget(lblCount)
+        layVCount.addWidget(self.__edCount)
+        layHCountTempCuvvete.addLayout(layVCount)
+        layVTemp = QVBoxLayout()
+        layVTemp.addWidget(lblTemp)
+        layVTemp.addWidget(self.__edTemp)
+        layHCountTempCuvvete.addLayout(layVTemp)
+        layVCuvvete = QVBoxLayout()
+        layVCuvvete.addWidget(lblCuvete)
+        layVCuvvete.addWidget(self.__edCuvvete)
+        layHCountTempCuvvete.addLayout(layVCuvvete)
+
+        layV = QVBoxLayout(self)
 
         layV.addLayout(layHDateNumber)
         layV.addWidget(lblCategory)
@@ -122,22 +124,24 @@ class dlgAddExp(QDialog):
         layV.addWidget(self.__edName)
         layV.addWidget(lblSubstance)
         layV.addWidget(self.__edSubstance)
-
-        layV.addLayout(layHCTC)
-
+        layV.addLayout(layHCountTempCuvvete)
         layV.addWidget(lblDescription)
         layV.addWidget(self.__teDescriptin)
-
         layH = QHBoxLayout()
         layH.addWidget(btnOk)
         layH.addWidget(btnCancel)
         layH.addWidget(btnFileOpen)
-
         layV.addLayout(layH)
 
         btnCancel.clicked.connect(self.reject)
+        btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
 
         print(self.geometry())
+
+    def btnAddCategory_clicked(self):
+        diaCategory = dlgCategory()
+        diaCategory.exec()
+
 
     @property
     def number(self):
@@ -154,3 +158,74 @@ class dlgAddExp(QDialog):
             return None
         else:
             return result
+
+    @property
+    def name(self):
+        result: str = self.__edName.text().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+    @property
+    def substance(self):
+        result: str = self.__edSubstance.text().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+    @property
+    def countExp(self):
+        result: str = self.__edCount.text().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+    @property
+    def tempExp(self):
+        result: str = self.__edTemp.text().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+    @property
+    def cuvette(self):
+        result: str = self.__edCuvvete.text().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+
+    @property
+    def description(self):
+        result: str = self.__teDescriptin.toPlainText().strip()
+        if not result:
+            return None
+        else:
+            return result
+
+class dlgCategory(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        btnAddCategory = QToolButton(parent=self)
+        btnAddCategory.setText('+')
+        btnEditCategory = QToolButton(parent=self)
+        btnEditCategory.setText('...')
+        btnDelCategory = QToolButton(parent=self)
+        btnDelCategory.setText('-')
+
+        layHButton = QHBoxLayout()
+        layHButton.addWidget(btnAddCategory)
+        layHButton.addWidget(btnEditCategory)
+        layHButton.addWidget(btnDelCategory)
+
+        tvCategory = QTableView(parent=self)
+
+        layV = QVBoxLayout(self)
+        layV.addLayout(layHButton)
+        layV.addWidget(tvCategory)

@@ -45,7 +45,7 @@ class MainWindow (QMainWindow):
         main_menu.updateNameExp.triggered.connect(self.ne.updateNameExp)
         main_menu.deleteNameExp.triggered.connect(self.ne.deleteNameExp)
         tool_bar.tbAdd.triggered.connect(self.ne.addNameExp)
-        tool_bar.tbUpdate.triggered.connect(self.ne.updateNameExp)
+        tool_bar.tbEdit.triggered.connect(self.ne.updateNameExp)
         tool_bar.tbDelete.triggered.connect(self.ne.deleteNameExp)
 
     @Slot()

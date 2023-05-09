@@ -9,7 +9,7 @@ class ToolBar(QToolBar):
         self.__tbAdd = QtGui.QAction('+')
         self.addAction(self.tbAdd)
         self.__tbUpdate = QtGui.QAction('/')
-        self.addAction(self.tbUpdate)
+        self.addAction(self.tbEdit)
         self.__tbDelete = QtGui.QAction('-')
         self.addAction(self.tbDelete)
 
@@ -18,7 +18,7 @@ class ToolBar(QToolBar):
         return self.__tbAdd
 
     @property
-    def tbUpdate(self):
+    def tbEdit(self):
         return self.__tbUpdate
 
     @property
