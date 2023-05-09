@@ -1,6 +1,11 @@
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QToolBar
 from PySide6.QtCore import Slot, Qt
 from PySide6 import QtGui
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+
 from MainMenu import MainMenu
 from ToolBar import ToolBar
 from NameExp import NameExp
@@ -19,6 +24,8 @@ class MainWindow (QMainWindow):
         self.ne = NameExp(parent=self)
         self.ne.setGeometry(0, 25, 800, 600)
 
+        self.graph =MPLGraph()
+
         self.btnOk = QPushButton('Ок', parent=self)
         self.btnCancel = QPushButton('Отмена', parent=self)
 
@@ -26,7 +33,11 @@ class MainWindow (QMainWindow):
 
         layV = QVBoxLayout(self)
 
-        layV.addWidget(self.ne)
+        layHTableGraph = QHBoxLayout()
+        layHTableGraph.addWidget(self.ne)
+        layHTableGraph.addWidget(self.graph)
+
+        layV.addLayout(layHTableGraph)
 
         layH = QHBoxLayout()
         layH.addWidget(self.btnOk)
@@ -58,3 +69,26 @@ class MainWindow (QMainWindow):
         text = "Анализ измерений спектофотометра"
         QMessageBox.about(self, title, text)
 
+class MPLGraph(FigureCanvasQTAgg):
+    def __init__(self):
+        self.fig = plt.figure(figsize=(2, 2), layout="tight")
+        self.ax = None
+        super().__init__(self.fig)
+        self.style = "default"
+        self.title = ""
+        self.noise_scale = 0.1
+        self.plot()
+
+    def plot(self):
+        with plt.style.context(self.style):
+            if self.ax:
+                self.fig.delaxes(self.ax)
+            self.ax = self.fig.add_subplot(111)
+            x = np.linspace(0, 1)
+            noise = np.random.normal(0, self.noise_scale, size=(len(x),))
+            y = x + noise
+            self.ax.plot(x, y)
+            self.ax.set_title(self.title)
+            self.ax.set_xlabel("t")
+            self.ax.set_ylabel("signal")
+            self.draw()
