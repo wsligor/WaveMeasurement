@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlQueryModel
-from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
+
 
 class Model(QSqlQueryModel):
     def __init__(self, parent=None):
@@ -15,7 +16,7 @@ class Model(QSqlQueryModel):
         self.setQuery(sql)
 
 
-class dlgCategory(QDialog):
+class dlgCategories(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -39,3 +40,21 @@ class dlgCategory(QDialog):
         layV = QVBoxLayout(self)
         layV.addLayout(layHButton)
         layV.addWidget(tvCategory)
+
+        btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
+
+    def btnAddCategory_clicked(self):
+        dlg = dlgCategory()
+        dlg.exec()
+
+class dlgCategory(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle('Категория')
+        lblName = QLabel('Наименование категории', parent=self)
+        self.__edName = QLineEdit(parent=self)
+
+        layH = QHBoxLayout(self)
+        layH.addWidget(lblName)
+        layH.addWidget(self.__edName)

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialo
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
-from Category import dlgCategory
+from Category import dlgCategories
 
 
 class Model(QSqlQueryModel):
@@ -140,7 +140,7 @@ class dlgAddExp(QDialog):
         print(self.geometry())
 
     def btnAddCategory_clicked(self):
-        dlg_category = dlgCategory()
+        dlg_category = dlgCategories()
         dlg_category.exec()
 
 
