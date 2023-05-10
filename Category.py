@@ -32,6 +32,7 @@ class dlgCategories(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle('Категории')
+
         # self.setGeometry(300, 500)
 
         btnAddCategory = QToolButton(parent=self)
