@@ -15,12 +15,12 @@ class Model(QSqlQueryModel):
         # self.setHeaderData(0, Qt.Orientation.Horizontal, 'ID')
         self.setHeaderData(1, Qt.Orientation.Horizontal, 'Номер')
 
-
     def refrechNameExp(self):
         sql = '''
             SELECT id, name, date, number FROM nameExp
         '''
         self.setQuery(sql)
+
 
 class NameExp(QTableView):
     def __init__(self, parent=None):
@@ -49,11 +49,12 @@ class NameExp(QTableView):
     def deleteNameExp(self):
         QMessageBox.information(self, 'NameExp', 'Delete')
 
+
 class dlgAddExp(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        lblDate  = QLabel('Дата', parent=self)
+        lblDate = QLabel('Дата', parent=self)
         self.__deDate = QDateEdit(parent=self)
 
         lblNumber = QLabel('Номер', parent=self)
@@ -88,7 +89,7 @@ class dlgAddExp(QDialog):
         btnAddGroup = QToolButton(parent=self)
         btnAddGroup.setText('...')
 
-        btnOk = QPushButton('Ok',parent=self)
+        btnOk = QPushButton('Ok', parent=self)
         btnCancel = QPushButton('Отмена', parent=self)
         btnFileOpen = QPushButton('Файл', parent=self)
 
@@ -153,7 +154,6 @@ class dlgAddExp(QDialog):
         dlg_category = dlgCategories()
         dlg_category.exec()
 
-
     @property
     def number(self):
         result: str = self.__edNumber.text().strip()
@@ -210,7 +210,6 @@ class dlgAddExp(QDialog):
         else:
             return result
 
-
     @property
     def description(self):
         result: str = self.__teDescriptin.toPlainText().strip()
@@ -218,4 +217,3 @@ class dlgAddExp(QDialog):
             return None
         else:
             return result
-
