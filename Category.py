@@ -1,9 +1,9 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtSql import QSqlQueryModel
+from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 from PySide6.QtWidgets import QPushButton, QHeaderView
 from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
 import sqlite3 as sl
-
+from Application import Application
 
 class Model(QSqlQueryModel):
     def __init__(self, parent=None):
@@ -13,7 +13,7 @@ class Model(QSqlQueryModel):
 
     def refrechCategories(self):
         sql = '''
-            SELECT name FROM categories
+            SELECT id, name FROM categories
         '''
         self.setQuery(sql)
 
@@ -23,7 +23,21 @@ class Model(QSqlQueryModel):
         data = [(name)]
         con.execute(sql, data)
         con.commit()
+        con.close()
         self.refrechCategories()
+
+    def edit(self, id, name):
+        con = sl.connect('SFM.db')
+        sql = '''UPDATE categories SET name = {} WHERE id = {}'''.format(name, id)
+        # data = (name, id)
+        con.execute(sql)
+        con.commit()
+        con.close()
+        self.refrechCategories()
+        # queryUpdate = QSqlQuery()
+        # sql = '''UPDATE categories SET name = {} WHERE id = {}'''.format(name, id)
+        # queryUpdate.exec(sql)
+        # Application.DataBase.commit()
 
 
 
@@ -51,6 +65,7 @@ class dlgCategories(QDialog):
         model = Model(parent=self)
         self.tvCategory = QTableView(parent=self)
         self.tvCategory.setModel(model)
+        self.tvCategory.hideColumn(0)
 
         hh = self.tvCategory.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -62,13 +77,29 @@ class dlgCategories(QDialog):
         layV.addWidget(self.tvCategory)
 
         btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
+        btnEditCategory.clicked.connect(self.btnEditCategory_clicked)
 
     @Slot()
     def btnAddCategory_clicked(self):
         dlg = dlgCategory()
         if dlg.exec():
-            self.tvCategory.model().add(dlg.name)
-            pass
+            self.tvCategory.model().add(dlg.name_cat)
+
+    @Slot()
+    def btnEditCategory_clicked(self):
+        dlg = dlgCategory()
+        row = self.tvCategory.currentIndex().row()
+        id = self.tvCategory.model().record(row).value(0)
+        query = QSqlQuery()
+        sql = '''SELECT name FROM categories WHERE id = {}'''.format(id)
+        query.exec(sql)
+        query.first()
+        name = query.value('name')
+        dlg.name_cat = name
+        if dlg.exec():
+            self.tvCategory.model().edit(id, dlg.name_cat)
+
+
 
 class dlgCategory(QDialog):
     def __init__(self, parent=None):
@@ -98,15 +129,19 @@ class dlgCategory(QDialog):
         btnOK.clicked.connect(self.btnOK_clicked)
 
     def btnOK_clicked(self):
-        if self.name is None:
+        if self.name_cat is None:
             return
         else:
             self.accept()
 
     @property
-    def name(self):
+    def name_cat(self):
         result: str = self.__edName.text().strip()
         if not result:
             return None
         else:
             return result
+
+    @name_cat.setter
+    def name_cat(self, value):
+        self.__edName.setText(value)
