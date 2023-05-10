@@ -22,14 +22,14 @@ class MainWindow (QMainWindow):
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, tool_bar)
 
         self.ne = NameExp(parent=self)
-        self.ne.setGeometry(0, 25, 800, 600)
+        self.ne.setGeometry(0, 0, 400, 400)
 
         self.graph =MPLGraph()
+        # self.graph_widget = QWidget()
+        # self.graph_widget.
 
         self.btnOk = QPushButton('Ок', parent=self)
         self.btnCancel = QPushButton('Отмена', parent=self)
-
-        self.centralWidget()
 
         layV = QVBoxLayout(self)
 
@@ -48,7 +48,10 @@ class MainWindow (QMainWindow):
         container = QWidget()
         container.setLayout(layV)
 
+        self.centralWidget()
         self.setCentralWidget(container)
+
+
 
         main_menu.about_qt.triggered.connect(self.about_qt)
         main_menu.about.triggered.connect(self.about)

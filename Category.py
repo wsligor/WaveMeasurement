@@ -1,6 +1,8 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtSql import QSqlQueryModel
+from PySide6.QtWidgets import QPushButton
 from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
+import sqlite3 as sl
 
 
 class Model(QSqlQueryModel):
@@ -14,6 +16,15 @@ class Model(QSqlQueryModel):
             SELECT name FROM categories
         '''
         self.setQuery(sql)
+
+    def add(self, name):
+        con = sl.connect('SFM.db')
+        sql = '''INSERT INTO categories (name) values (?)'''
+        data = [(name)]
+        con.execute(sql, data)
+        con.commit()
+        self.refrechCategories()
+
 
 
 class dlgCategories(QDialog):
@@ -33,19 +44,22 @@ class dlgCategories(QDialog):
         layHButton.addWidget(btnDelCategory)
         layHButton.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        tvCategory = QTableView(parent=self)
         model = Model(parent=self)
-        tvCategory.setModel(model)
+        self.tvCategory = QTableView(parent=self)
+        self.tvCategory.setModel(model)
 
         layV = QVBoxLayout(self)
         layV.addLayout(layHButton)
-        layV.addWidget(tvCategory)
+        layV.addWidget(self.tvCategory)
 
         btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
 
+    @Slot()
     def btnAddCategory_clicked(self):
         dlg = dlgCategory()
-        dlg.exec()
+        if dlg.exec():
+            self.tvCategory.model().add(dlg.name)
+            pass
 
 class dlgCategory(QDialog):
     def __init__(self, parent=None):
@@ -55,6 +69,35 @@ class dlgCategory(QDialog):
         lblName = QLabel('Наименование категории', parent=self)
         self.__edName = QLineEdit(parent=self)
 
-        layH = QHBoxLayout(self)
-        layH.addWidget(lblName)
-        layH.addWidget(self.__edName)
+        layHEdit = QHBoxLayout()
+        layHEdit.addWidget(lblName)
+        layHEdit.addWidget(self.__edName)
+
+        btnOK = QPushButton('Сохранить')
+        btnCancel = QPushButton('Отмена')
+
+        layHButton = QHBoxLayout()
+        layHButton.setAlignment(Qt.AlignmentFlag.AlignRight)
+        layHButton.addWidget(btnOK)
+        layHButton.addWidget(btnCancel)
+
+        layV = QVBoxLayout(self)
+        layV.addLayout(layHEdit)
+        layV.addLayout(layHButton)
+
+        btnCancel.clicked.connect(self.reject)
+        btnOK.clicked.connect(self.btnOK_clicked)
+
+    def btnOK_clicked(self):
+        if self.name is None:
+            return
+        else:
+            self.accept()
+
+    @property
+    def name(self):
+        result: str = self.__edName.text().strip()
+        if not result:
+            return None
+        else:
+            return result

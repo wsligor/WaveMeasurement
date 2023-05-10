@@ -1,5 +1,5 @@
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
@@ -12,9 +12,13 @@ class Model(QSqlQueryModel):
 
         self.refrechNameExp()
 
+        # self.setHeaderData(0, Qt.Orientation.Horizontal, 'ID')
+        self.setHeaderData(1, Qt.Orientation.Horizontal, 'Номер')
+
+
     def refrechNameExp(self):
         sql = '''
-            SELECT date, number, name, substance, count, temperature, cuvette FROM nameExp
+            SELECT id, name, date, number FROM nameExp
         '''
         self.setQuery(sql)
 
@@ -25,9 +29,15 @@ class NameExp(QTableView):
         model = Model(parent=self)
         self.setModel(model)
 
+        self.setSelectionBehavior(self.SelectionBehavior.SelectRows)
+        self.hideColumn(0)
+
+        hh: QTableView().horizontalHeader() = self.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        # hh.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch)
+
     @Slot()
     def addNameExp(self):
-        # QMessageBox.information(self, 'NameExp', 'Add')
         dia = dlgAddExp()
         dia.exec()
 
