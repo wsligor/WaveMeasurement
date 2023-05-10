@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtSql import QSqlQueryModel
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QPushButton, QHeaderView
 from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
 import sqlite3 as sl
 
@@ -31,6 +31,9 @@ class dlgCategories(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle('Категории')
+        # self.setGeometry(300, 500)
+
         btnAddCategory = QToolButton(parent=self)
         btnAddCategory.setText('+')
         btnEditCategory = QToolButton(parent=self)
@@ -47,6 +50,11 @@ class dlgCategories(QDialog):
         model = Model(parent=self)
         self.tvCategory = QTableView(parent=self)
         self.tvCategory.setModel(model)
+
+        hh = self.tvCategory.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        hh.hide()
+        # self.tvCategory.horizontalHeader().setSelectionBehavior()
 
         layV = QVBoxLayout(self)
         layV.addLayout(layHButton)
