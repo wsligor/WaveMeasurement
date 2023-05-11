@@ -1,9 +1,10 @@
+import os
 from typing import Any
 from datetime import date
 import sqlite3 as sl
 
 from PySide6.QtCore import Qt, Slot, QModelIndex
-from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView
+from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView, QFileDialog
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
@@ -32,10 +33,16 @@ class Model(QSqlQueryModel):
                 return Qt.AlignmentFlag.AlignCenter
         return super().data(item, role)
 
-    def add(self):
-        print('add')
-
-
+    def add(self, l):
+        con = sl.connect('SFM.db')
+        sql = '''INSERT INTO nameExp 
+                (date, number, name, substance, count, temperature, cuvette, note) 
+                    values (?, ?, ?, ?, ?, ?, ?, ?)'''
+        data = l
+        con.execute(sql, data)
+        con.commit()
+        con.close()
+        self.refreshNameExp()
 
 
 class NameExp(QTableView):
@@ -62,10 +69,12 @@ class NameExp(QTableView):
 
     @Slot()
     def addNameExp(self):
+        l = []
         dia = dlgAddExp()
         if dia.exec():
-            QMessageBox(self, 'Add', 'NameExp')
-            self.model.add()
+            l = [dia.dateExp, dia.number, dia.name, dia.substance,
+                 dia.countExp, dia.tempExp, dia.cuvette, dia.description]
+            self.model.add(l)
 
     @Slot()
     def updateNameExp(self):
@@ -136,6 +145,11 @@ class dlgAddExp(QDialog):
         lblDescription = QLabel('Описание:', parent=self)
         self.__teDescription = QTextEdit(parent=self)
 
+        self.lblFileName = QLabel('Название файла: ', parent=self)
+        self.lblFileName.setMinimumHeight(40)
+        self.lblFileName.setWordWrap(True)
+        self.lblFileName.setAlignment(Qt.AlignmentFlag.AlignTop)
+
         btnCategory = QToolButton(parent=self)
         btnCategory.setText('...')
         btnGroup = QToolButton(parent=self)
@@ -191,6 +205,7 @@ class dlgAddExp(QDialog):
         layV.addLayout(layHCountTempCuvette)
         layV.addWidget(lblDescription)
         layV.addWidget(self.__teDescription)
+        layV.addWidget(self.lblFileName)
         layH = QHBoxLayout()
         layH.addWidget(btnOk)
         layH.addWidget(btnCancel)
@@ -199,15 +214,40 @@ class dlgAddExp(QDialog):
 
         btnCancel.clicked.connect(self.reject)
         btnOk.clicked.connect(self.btnOk_clicked)
+        btnFileOpen.clicked.connect(self.btnFileOpenclicked)
         btnCategory.clicked.connect(self.btnCategory_clicked)
         btnGroup.clicked.connect(self.btnGroup_clicked)
 
 
+    def btnFileOpenclicked(self):
+        filename = QFileDialog.getOpenFileName(self, 'Открыть файл', os.getcwd(), 'Excel files (*.xlsx)')[0]
+        text = self.lblFileName.text()
+        self.lblFileName.setText(text + filename)
+        print(filename)
+        pass
+
     def btnOk_clicked(self):
-        if 1 == 2:
+        if not self.checkForm():
             return
         else:
             self.accept()
+
+    def checkForm(self):
+        if self.dateExp is None:
+            return False
+        if self.number is None:
+            return False
+        if self.name is None:
+            return False
+        if self.substance is None:
+            return False
+        if self.countExp is None:
+            return False
+        if self.tempExp is None:
+            return False
+        if self.cuvette is None:
+            return False
+        return True
 
     def btnGroup_clicked(self):
         dlg_groups = dlgGroups()
@@ -233,57 +273,100 @@ class dlgAddExp(QDialog):
     def number(self):
         result: str = self.__edNumber.text().strip()
         if not result:
+            t = 'Номер'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @number.setter
+    def number(self, value):
+        print('setter')
+        self.__edNumber.setText((value))
 
     @property
     def dateExp(self):
         result: str = self.__deDate.text().strip()
         if not result:
+            t = 'Дата: '
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @dateExp.setter
+    def dateExp(self, value):
+        self.__deDate.setDate(value)
 
     @property
     def name(self):
         result: str = self.__edName.text().strip()
         if not result:
+            t = 'Наименование'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @name.setter
+    def name(self, value):
+        self.__edName.setText(value)
 
     @property
     def substance(self):
         result: str = self.__edSubstance.text().strip()
         if not result:
+            t = 'Образец'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @substance.setter
+    def substance(self, value):
+        self.__edSubstance.setText(value)
 
     @property
     def countExp(self):
         result: str = self.__edCount.text().strip()
         if not result:
+            t = 'Процент'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @countExp.setter
+    def countExp(self, value):
+        self.__edCount.setText(value)
 
     @property
     def tempExp(self):
         result: str = self.__edTemp.text().strip()
         if not result:
+            t = 'Температура'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @tempExp.setter
+    def tempExp(self, value):
+        self.__edTemp.setText(value)
 
     @property
     def cuvette(self):
         result: str = self.__edCuvette.text().strip()
         if not result:
+            t = 'Кювета'
+            QMessageBox.information(self, t, 'Заполните поле: '+t)
             return None
         else:
             return result
+
+    @cuvette.setter
+    def cuvette(self, value):
+        self.__edCuvette.setText(value)
 
     @property
     def description(self):
@@ -292,3 +375,7 @@ class dlgAddExp(QDialog):
             return None
         else:
             return result
+
+    @description.setter
+    def description(self, value):
+        self.__teDescription.setPlainText(value)
