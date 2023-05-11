@@ -32,13 +32,18 @@ class Model(QSqlQueryModel):
                 return Qt.AlignmentFlag.AlignCenter
         return super().data(item, role)
 
+    def add(self):
+        print('add')
+
+
+
 
 class NameExp(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        model = Model(parent=self)
-        self.setModel(model)
+        self.model = Model(parent=self)
+        self.setModel(self.model)
 
         # выделение полной строки в таблице
         self.setSelectionBehavior(self.SelectionBehavior.SelectRows)
@@ -58,7 +63,9 @@ class NameExp(QTableView):
     @Slot()
     def addNameExp(self):
         dia = dlgAddExp()
-        dia.exec()
+        if dia.exec():
+            QMessageBox(self, 'Add', 'NameExp')
+            self.model.add()
 
     @Slot()
     def updateNameExp(self):
@@ -191,8 +198,16 @@ class dlgAddExp(QDialog):
         layV.addLayout(layH)
 
         btnCancel.clicked.connect(self.reject)
+        btnOk.clicked.connect(self.btnOk_clicked)
         btnCategory.clicked.connect(self.btnCategory_clicked)
         btnGroup.clicked.connect(self.btnGroup_clicked)
+
+
+    def btnOk_clicked(self):
+        if 1 == 2:
+            return
+        else:
+            self.accept()
 
     def btnGroup_clicked(self):
         dlg_groups = dlgGroups()
