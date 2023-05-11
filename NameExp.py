@@ -1,5 +1,6 @@
 from typing import Any
 from datetime import date
+import sqlite3 as sl
 
 from PySide6.QtCore import Qt, Slot, QModelIndex
 from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView
@@ -28,7 +29,6 @@ class Model(QSqlQueryModel):
             return
         if item.column() == 3:
             if role == Qt.ItemDataRole.TextAlignmentRole:
-                print(super().data(item))
                 return Qt.AlignmentFlag.AlignCenter
         return super().data(item, role)
 
@@ -99,6 +99,7 @@ class dlgAddExp(QDialog):
 
         lblNumber = QLabel('Номер', parent=self)
         self.__edNumber = QLineEdit(parent=self)
+        self.__edNumber.setText(str(self.returnMaxNumber()))
 
         lblCategory = QLabel('Категория:', parent=self)
         self.__cbCategory = QComboBox(parent=self)
@@ -196,12 +197,22 @@ class dlgAddExp(QDialog):
     def btnGroup_clicked(self):
         dlg_groups = dlgGroups()
         dlg_groups.exec()
-        self.__cbGroup.model().refrechGroups()
+        self.modelGroups.refreshGroups()
 
     def btnCategory_clicked(self):
         dlg_category = dlgCategories()
         dlg_category.exec()
-        self.__cbCategory.model().refrechCategories()
+        self.modelCategories.refreshCategories()
+
+    def returnMaxNumber(self):
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        sql = 'SELECT MAX(number) FROM nameExp'
+        cur.execute(sql)
+        record = cur.fetchone()
+        result = record[0]
+        con.close()
+        return result
 
     @property
     def number(self):
