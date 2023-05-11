@@ -13,7 +13,7 @@ from NameExp import NameExp
 class MainWindow (QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.resize(1500, 600)
+        self.resize(1700, 600)
 
         main_menu = MainMenu(parent=self)
         self.setMenuBar(main_menu)
@@ -22,11 +22,11 @@ class MainWindow (QMainWindow):
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, tool_bar)
 
         self.ne = NameExp(parent=self)
-        self.ne.setGeometry(0, 0, 400, 400)
+        self.ne.setMinimumWidth(350)
+        self.ne.setMaximumWidth(350)
 
         self.graph =MPLGraph()
-        # self.graph_widget = QWidget()
-        # self.graph_widget.
+        self.graph.resize(1000, 400)
 
         self.btnOk = QPushButton('Ок', parent=self)
         self.btnCancel = QPushButton('Отмена', parent=self)
@@ -50,8 +50,6 @@ class MainWindow (QMainWindow):
 
         self.centralWidget()
         self.setCentralWidget(container)
-
-
 
         main_menu.about_qt.triggered.connect(self.about_qt)
         main_menu.about.triggered.connect(self.about)

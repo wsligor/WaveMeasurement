@@ -1,9 +1,14 @@
-from PySide6.QtCore import Qt, Slot
+from ctypes import Union
+from typing import Any
+
+from PySide6.QtCore import Qt, Slot, QModelIndex, QPersistentModelIndex
 from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
-from Category import dlgCategories, Model as ModelCategories
+from Category import dlgCategories
+from Group import dlgGroups
+
 
 
 class Model(QSqlQueryModel):
@@ -19,6 +24,31 @@ class Model(QSqlQueryModel):
         sql = 'SELECT id, name, date, number FROM nameExp'
         self.setQuery(sql)
 
+    # def data(self, item: QModelIndex, role: int = ...) -> Any:
+    #     if not item.isValid():
+    #         return
+    #     if role == Qt.ItemDataRole.DisplayRole:
+    #         i = item
+    #         print(i)
+    #         col = item.column()
+    #         if col == 0:
+    #             print('0 = {}'.format(i))
+    #         if col == 1:
+    #             print('1 = {}'.format(i))
+        #     # dataExpInfo = self.__data[item.row()]
+        #     # col = item.column()
+        #     # if col == 0:
+        #     #     return str(dataExpInfo[col])
+        #     # if col == 1:
+        #     #     return str(dataExpInfo[col])
+        #     # if col == 2:
+        #     #     return str(dataExpInfo[col])
+        #
+        # elif role == Qt.ItemDataRole.UserRole:
+        #     print(role)
+        #     return self.items[item.row()]
+
+
 
 class NameExp(QTableView):
     def __init__(self, parent=None):
@@ -32,7 +62,10 @@ class NameExp(QTableView):
 
         hh: QTableView().horizontalHeader() = self.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        # hh.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+
+        hv = self.verticalHeader()
+        hv.hide()
 
     @Slot()
     def addNameExp(self):
@@ -57,6 +90,15 @@ class ModelCategories(QSqlQueryModel):
         sql = 'SELECT name FROM categories'
         self.setQuery(sql)
 
+class ModelGroups(QSqlQueryModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.refrechGroups()
+
+    def refrechGroups(self):
+        sql = 'SELECT name FROM groups'
+        self.setQuery(sql)
+
 class dlgAddExp(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -74,6 +116,8 @@ class dlgAddExp(QDialog):
 
         lblGroup = QLabel('Группа:', parent=self)
         self.__cbGroup = QComboBox(parent=self)
+        self.modelGroups = ModelGroups(parent=self)
+        self.__cbGroup.setModel(self.modelGroups)
 
         lblName = QLabel('Наименование:', parent=self)
         self.__edName = QLineEdit(parent=self)
@@ -95,8 +139,8 @@ class dlgAddExp(QDialog):
 
         btnCategory = QToolButton(parent=self)
         btnCategory.setText('...')
-        btnAddGroup = QToolButton(parent=self)
-        btnAddGroup.setText('...')
+        btnGroup = QToolButton(parent=self)
+        btnGroup.setText('...')
 
         btnOk = QPushButton('Ok', parent=self)
         btnCancel = QPushButton('Отмена', parent=self)
@@ -118,7 +162,7 @@ class dlgAddExp(QDialog):
 
         layHCroup = QHBoxLayout()
         layHCroup.addWidget(self.__cbGroup)
-        layHCroup.addWidget(btnAddGroup)
+        layHCroup.addWidget(btnGroup)
 
         layHCountTempCuvvete = QHBoxLayout()
         layVCount = QVBoxLayout()
@@ -156,6 +200,12 @@ class dlgAddExp(QDialog):
 
         btnCancel.clicked.connect(self.reject)
         btnCategory.clicked.connect(self.btnCategory_clicked)
+        btnGroup.clicked.connect(self.btnGroup_clicked)
+
+    def btnGroup_clicked(self):
+        dlg_groups = dlgGroups()
+        dlg_groups.exec()
+        self.__cbGroup.model().refrechGroups()
 
     def btnCategory_clicked(self):
         dlg_category = dlgCategories()
