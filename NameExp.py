@@ -6,16 +6,6 @@ from PySide6.QtSql import QSqlQueryModel
 from Category import dlgCategories, Model as ModelCategories
 
 
-
-class ModelCategories(QSqlQueryModel):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.refrechCategories()
-
-    def refrechCategories(self):
-        sql = 'SELECT name FROM categories'
-        self.setQuery(sql)
-
 class Model(QSqlQueryModel):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,6 +47,15 @@ class NameExp(QTableView):
     def deleteNameExp(self):
         QMessageBox.information(self, 'NameExp', 'Delete')
 
+
+class ModelCategories(QSqlQueryModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.refrechCategories()
+
+    def refrechCategories(self):
+        sql = 'SELECT name FROM categories'
+        self.setQuery(sql)
 
 class dlgAddExp(QDialog):
     def __init__(self, parent=None):
@@ -157,8 +156,6 @@ class dlgAddExp(QDialog):
 
         btnCancel.clicked.connect(self.reject)
         btnCategory.clicked.connect(self.btnCategory_clicked)
-
-        print(self.geometry())
 
     def btnCategory_clicked(self):
         dlg_category = dlgCategories()

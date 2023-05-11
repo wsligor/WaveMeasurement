@@ -13,7 +13,7 @@ from NameExp import NameExp
 class MainWindow (QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.resize(1000, 1000)
+        self.resize(1500, 600)
 
         main_menu = MainMenu(parent=self)
         self.setMenuBar(main_menu)

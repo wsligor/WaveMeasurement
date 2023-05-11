@@ -3,24 +3,20 @@ from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 from PySide6.QtWidgets import QPushButton, QHeaderView, QMessageBox
 from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
 import sqlite3 as sl
-from Application import Application
 
 class Model(QSqlQueryModel):
     def __init__(self, parent=None):
         super().__init__(parent)
-
         self.refrechCategories()
 
     def refrechCategories(self):
-        sql = '''
-            SELECT id, name FROM categories
-        '''
+        sql = 'SELECT id, name FROM categories'
         self.setQuery(sql)
 
     def add(self, name):
         con = sl.connect('SFM.db')
-        sql = '''INSERT INTO categories (name) values (?)'''
-        data = [(name)]
+        sql = 'INSERT INTO categories (name) values (?)'
+        data = [name]
         con.execute(sql, data)
         con.commit()
         con.close()
@@ -28,7 +24,7 @@ class Model(QSqlQueryModel):
 
     def edit(self, id, name):
         con = sl.connect('SFM.db')
-        sql = '''UPDATE categories SET name = "{}" WHERE id = {}'''.format(name, id)
+        sql = 'UPDATE categories SET name = "{}" WHERE id = {}'.format(name, id)
         con.execute(sql)
         con.commit()
         con.close()
@@ -36,12 +32,11 @@ class Model(QSqlQueryModel):
 
     def delete(self, id):
         con = sl.connect('SFM.db')
-        sql = '''DELETE FROM categories WHERE id = {}'''.format(id)
+        sql = 'DELETE FROM categories WHERE id = {}'.format(id)
         con.execute(sql)
         con.commit()
         con.close()
         self.refrechCategories()
-
 
 
 class dlgCategories(QDialog):
@@ -110,9 +105,7 @@ class dlgCategory(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle('Категория')
-
         self.resize(400, 80)
-
 
         lblName = QLabel('Наименование категории', parent=self)
         self.__edName = QLineEdit(parent=self)
