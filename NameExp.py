@@ -1,14 +1,13 @@
-from ctypes import Union
 from typing import Any
+from datetime import date
 
-from PySide6.QtCore import Qt, Slot, QModelIndex, QPersistentModelIndex
+from PySide6.QtCore import Qt, Slot, QModelIndex
 from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
 from Category import dlgCategories
 from Group import dlgGroups
-
 
 
 class Model(QSqlQueryModel):
@@ -18,36 +17,20 @@ class Model(QSqlQueryModel):
         # self.setHeaderData(0, Qt.Orientation.Horizontal, 'ID')
         self.setHeaderData(1, Qt.Orientation.Horizontal, 'Номер')
 
-        self.refrechNameExp()
+        self.refreshNameExp()
 
-    def refrechNameExp(self):
+    def refreshNameExp(self):
         sql = 'SELECT id, name, date, number FROM nameExp'
         self.setQuery(sql)
 
-    # def data(self, item: QModelIndex, role: int = ...) -> Any:
-    #     if not item.isValid():
-    #         return
-    #     if role == Qt.ItemDataRole.DisplayRole:
-    #         i = item
-    #         print(i)
-    #         col = item.column()
-    #         if col == 0:
-    #             print('0 = {}'.format(i))
-    #         if col == 1:
-    #             print('1 = {}'.format(i))
-        #     # dataExpInfo = self.__data[item.row()]
-        #     # col = item.column()
-        #     # if col == 0:
-        #     #     return str(dataExpInfo[col])
-        #     # if col == 1:
-        #     #     return str(dataExpInfo[col])
-        #     # if col == 2:
-        #     #     return str(dataExpInfo[col])
-        #
-        # elif role == Qt.ItemDataRole.UserRole:
-        #     print(role)
-        #     return self.items[item.row()]
-
+    def data(self, item: QModelIndex, role: int = ...) -> Any:
+        if not item.isValid():
+            return
+        if item.column() == 3:
+            if role == Qt.ItemDataRole.TextAlignmentRole:
+                print(super().data(item))
+                return Qt.AlignmentFlag.AlignCenter
+        return super().data(item, role)
 
 
 class NameExp(QTableView):
@@ -57,14 +40,19 @@ class NameExp(QTableView):
         model = Model(parent=self)
         self.setModel(model)
 
+        # выделение полной строки в таблице
         self.setSelectionBehavior(self.SelectionBehavior.SelectRows)
+        # убираем первый столбик ID
         self.hideColumn(0)
-
-        hh: QTableView().horizontalHeader() = self.horizontalHeader()
+        # настройка горизонтального заголовка
+        hh = self.horizontalHeader()
+        # ширина всех столбцов регулируется по контексту
         hh.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        # столбец "Name" регулируется растягиваясь на оставшуюся длину
         hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-
+        # настройка вертикального заголовка
         hv = self.verticalHeader()
+        # убираем вертикальную нумерацию строк
         hv.hide()
 
     @Slot()
@@ -84,20 +72,22 @@ class NameExp(QTableView):
 class ModelCategories(QSqlQueryModel):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.refrechCategories()
+        self.refreshCategories()
 
-    def refrechCategories(self):
+    def refreshCategories(self):
         sql = 'SELECT name FROM categories'
         self.setQuery(sql)
+
 
 class ModelGroups(QSqlQueryModel):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.refrechGroups()
+        self.refreshGroups()
 
-    def refrechGroups(self):
+    def refreshGroups(self):
         sql = 'SELECT name FROM groups'
         self.setQuery(sql)
+
 
 class dlgAddExp(QDialog):
     def __init__(self, parent=None):
@@ -105,6 +95,7 @@ class dlgAddExp(QDialog):
 
         lblDate = QLabel('Дата', parent=self)
         self.__deDate = QDateEdit(parent=self)
+        self.__deDate.setDate(date.today())
 
         lblNumber = QLabel('Номер', parent=self)
         self.__edNumber = QLineEdit(parent=self)
@@ -131,11 +122,11 @@ class dlgAddExp(QDialog):
         lblTemp = QLabel('Температура:', parent=self)
         self.__edTemp = QLineEdit(parent=self)
 
-        lblCuvete = QLabel('Кювета', parent=self)
-        self.__edCuvvete = QLineEdit(parent=self)
+        lblCuvette = QLabel('Кювета', parent=self)
+        self.__edCuvette = QLineEdit(parent=self)
 
         lblDescription = QLabel('Описание:', parent=self)
-        self.__teDescriptin = QTextEdit(parent=self)
+        self.__teDescription = QTextEdit(parent=self)
 
         btnCategory = QToolButton(parent=self)
         btnCategory.setText('...')
@@ -164,19 +155,19 @@ class dlgAddExp(QDialog):
         layHCroup.addWidget(self.__cbGroup)
         layHCroup.addWidget(btnGroup)
 
-        layHCountTempCuvvete = QHBoxLayout()
+        layHCountTempCuvette = QHBoxLayout()
         layVCount = QVBoxLayout()
         layVCount.addWidget(lblCount)
         layVCount.addWidget(self.__edCount)
-        layHCountTempCuvvete.addLayout(layVCount)
+        layHCountTempCuvette.addLayout(layVCount)
         layVTemp = QVBoxLayout()
         layVTemp.addWidget(lblTemp)
         layVTemp.addWidget(self.__edTemp)
-        layHCountTempCuvvete.addLayout(layVTemp)
-        layVCuvvete = QVBoxLayout()
-        layVCuvvete.addWidget(lblCuvete)
-        layVCuvvete.addWidget(self.__edCuvvete)
-        layHCountTempCuvvete.addLayout(layVCuvvete)
+        layHCountTempCuvette.addLayout(layVTemp)
+        layVCuvette = QVBoxLayout()
+        layVCuvette.addWidget(lblCuvette)
+        layVCuvette.addWidget(self.__edCuvette)
+        layHCountTempCuvette.addLayout(layVCuvette)
 
         layV = QVBoxLayout(self)
 
@@ -189,9 +180,9 @@ class dlgAddExp(QDialog):
         layV.addWidget(self.__edName)
         layV.addWidget(lblSubstance)
         layV.addWidget(self.__edSubstance)
-        layV.addLayout(layHCountTempCuvvete)
+        layV.addLayout(layHCountTempCuvette)
         layV.addWidget(lblDescription)
-        layV.addWidget(self.__teDescriptin)
+        layV.addWidget(self.__teDescription)
         layH = QHBoxLayout()
         layH.addWidget(btnOk)
         layH.addWidget(btnCancel)
@@ -262,7 +253,7 @@ class dlgAddExp(QDialog):
 
     @property
     def cuvette(self):
-        result: str = self.__edCuvvete.text().strip()
+        result: str = self.__edCuvette.text().strip()
         if not result:
             return None
         else:
@@ -270,7 +261,7 @@ class dlgAddExp(QDialog):
 
     @property
     def description(self):
-        result: str = self.__teDescriptin.toPlainText().strip()
+        result: str = self.__teDescription.toPlainText().strip()
         if not result:
             return None
         else:
