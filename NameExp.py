@@ -3,22 +3,30 @@ from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialo
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
 from PySide6.QtSql import QSqlQueryModel
 
-from Category import dlgCategories
+from Category import dlgCategories, Model as ModelCategories
 
+
+
+class ModelCategories(QSqlQueryModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.refrechCategories()
+
+    def refrechCategories(self):
+        sql = 'SELECT name FROM categories'
+        self.setQuery(sql)
 
 class Model(QSqlQueryModel):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.refrechNameExp()
-
         # self.setHeaderData(0, Qt.Orientation.Horizontal, 'ID')
         self.setHeaderData(1, Qt.Orientation.Horizontal, 'Номер')
 
+        self.refrechNameExp()
+
     def refrechNameExp(self):
-        sql = '''
-            SELECT id, name, date, number FROM nameExp
-        '''
+        sql = 'SELECT id, name, date, number FROM nameExp'
         self.setQuery(sql)
 
 
@@ -62,6 +70,8 @@ class dlgAddExp(QDialog):
 
         lblCategory = QLabel('Категория:', parent=self)
         self.__cbCategory = QComboBox(parent=self)
+        self.modelCategories = ModelCategories(parent=self)
+        self.__cbCategory.setModel(self.modelCategories)
 
         lblGroup = QLabel('Группа:', parent=self)
         self.__cbGroup = QComboBox(parent=self)
@@ -84,8 +94,8 @@ class dlgAddExp(QDialog):
         lblDescription = QLabel('Описание:', parent=self)
         self.__teDescriptin = QTextEdit(parent=self)
 
-        btnAddCategory = QToolButton(parent=self)
-        btnAddCategory.setText('...')
+        btnCategory = QToolButton(parent=self)
+        btnCategory.setText('...')
         btnAddGroup = QToolButton(parent=self)
         btnAddGroup.setText('...')
 
@@ -105,7 +115,7 @@ class dlgAddExp(QDialog):
 
         layHCategory = QHBoxLayout()
         layHCategory.addWidget(self.__cbCategory)
-        layHCategory.addWidget(btnAddCategory)
+        layHCategory.addWidget(btnCategory)
 
         layHCroup = QHBoxLayout()
         layHCroup.addWidget(self.__cbGroup)
@@ -146,13 +156,14 @@ class dlgAddExp(QDialog):
         layV.addLayout(layH)
 
         btnCancel.clicked.connect(self.reject)
-        btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
+        btnCategory.clicked.connect(self.btnCategory_clicked)
 
         print(self.geometry())
 
-    def btnAddCategory_clicked(self):
+    def btnCategory_clicked(self):
         dlg_category = dlgCategories()
         dlg_category.exec()
+        self.__cbCategory.model().refrechCategories()
 
     @property
     def number(self):

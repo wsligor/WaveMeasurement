@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery
-from PySide6.QtWidgets import QPushButton, QHeaderView
+from PySide6.QtWidgets import QPushButton, QHeaderView, QMessageBox
 from PySide6.QtWidgets import QDialog, QToolButton, QHBoxLayout, QTableView, QVBoxLayout, QLabel, QLineEdit
 import sqlite3 as sl
 from Application import Application
@@ -29,15 +29,18 @@ class Model(QSqlQueryModel):
     def edit(self, id, name):
         con = sl.connect('SFM.db')
         sql = '''UPDATE categories SET name = "{}" WHERE id = {}'''.format(name, id)
-        # data = (name, id)
         con.execute(sql)
         con.commit()
         con.close()
         self.refrechCategories()
-        # queryUpdate = QSqlQuery()
-        # sql = '''UPDATE categories SET name = {} WHERE id = {}'''.format(name, id)
-        # queryUpdate.exec(sql)
-        # Application.DataBase.commit()
+
+    def delete(self, id):
+        con = sl.connect('SFM.db')
+        sql = '''DELETE FROM categories WHERE id = {}'''.format(id)
+        con.execute(sql)
+        con.commit()
+        con.close()
+        self.refrechCategories()
 
 
 
@@ -46,8 +49,7 @@ class dlgCategories(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle('Категории')
-
-        # self.setGeometry(300, 500)
+        self.resize(300, 400)
 
         btnAddCategory = QToolButton(parent=self)
         btnAddCategory.setText('+')
@@ -78,6 +80,7 @@ class dlgCategories(QDialog):
 
         btnAddCategory.clicked.connect(self.btnAddCategory_clicked)
         btnEditCategory.clicked.connect(self.btnEditCategory_clicked)
+        btnDelCategory.clicked.connect(self.btnDelCategory_clicked)
 
     @Slot()
     def btnAddCategory_clicked(self):
@@ -90,15 +93,16 @@ class dlgCategories(QDialog):
         dlg = dlgCategory()
         row = self.tvCategory.currentIndex().row()
         id = self.tvCategory.model().record(row).value(0)
-        # query = QSqlQuery()
-        # sql = '''SELECT name FROM categories WHERE id = {}'''.format(id)
-        # query.exec(sql)
-        # query.first()
-        # name = query.value('name')
         dlg.name_cat = self.tvCategory.model().record(row).value(1)
         if dlg.exec():
             self.tvCategory.model().edit(id, dlg.name_cat)
 
+    @Slot()
+    def btnDelCategory_clicked(self):
+        if QMessageBox.question(self, 'Категория', 'Вы уверены?'):
+            row = self.tvCategory.currentIndex().row()
+            id = self.tvCategory.model().record(row).value(0)
+            self.tvCategory.model().delete(id)
 
 
 class dlgCategory(QDialog):
@@ -106,6 +110,10 @@ class dlgCategory(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle('Категория')
+
+        self.resize(400, 80)
+
+
         lblName = QLabel('Наименование категории', parent=self)
         self.__edName = QLineEdit(parent=self)
 
