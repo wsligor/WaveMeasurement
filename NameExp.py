@@ -1,8 +1,9 @@
-import os
+import os, os.path
 from typing import Any
 from datetime import date
 import sqlite3 as sl
 
+import openpyxl as openpyxl
 from PySide6.QtCore import Qt, Slot, QModelIndex
 from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QDateEdit, QDialog, QHeaderView, QFileDialog
 from PySide6.QtWidgets import QTableView, QMessageBox, QHBoxLayout, QVBoxLayout, QPushButton, QToolButton, QLabel
@@ -33,16 +34,41 @@ class Model(QSqlQueryModel):
                 return Qt.AlignmentFlag.AlignCenter
         return super().data(item, role)
 
-    def add(self, l):
+    def add(self, values, filename):
         con = sl.connect('SFM.db')
+        cur = con.cursor()
         sql = '''INSERT INTO nameExp 
                 (date, number, name, substance, count, temperature, cuvette, note) 
                     values (?, ?, ?, ?, ?, ?, ?, ?)'''
-        data = l
-        con.execute(sql, data)
+        cur.execute(sql, values)
+        id_nameExp = cur.lastrowid
+        self.addDataSet(filename, id_nameExp, cur)
         con.commit()
         con.close()
         self.refreshNameExp()
+
+    def addDataSet(self, filename, id_nameExp, cur):
+        print(filename, id_nameExp, cur)
+        lid = id_nameExp
+
+        book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
+        sheet: openpyxl.worksheet.worksheet.Worksheet = book.active
+
+        max_rows = sheet.max_row
+        dataExp = []
+
+        for i in range(2, max_rows + 1):
+            waveLength = sheet.cell(row=i, column=1).value
+            opticDensity = sheet.cell(row=i, column=2).value
+            transparency = sheet.cell(row=i, column=3).value
+            str_dataExp = (waveLength, opticDensity, transparency, lid)
+
+            dataExp.append(str_dataExp)
+
+        sqlite_insert_query = """INSERT INTO dataExp (waveLength, opticDensity, transparency, id_nameExp)
+                            VALUES (?,?,?,?)"""
+
+        cur.executemany(sqlite_insert_query, dataExp)
 
 
 class NameExp(QTableView):
@@ -69,12 +95,12 @@ class NameExp(QTableView):
 
     @Slot()
     def addNameExp(self):
-        l = []
+        values = []
         dia = dlgAddExp()
         if dia.exec():
-            l = [dia.dateExp, dia.number, dia.name, dia.substance,
-                 dia.countExp, dia.tempExp, dia.cuvette, dia.description]
-            self.model.add(l)
+            values = [dia.dateExp, dia.number, dia.name, dia.substance,
+                      dia.countExp, dia.tempExp, dia.cuvette, dia.description]
+            self.model.add(values, dia.filename)
 
     @Slot()
     def updateNameExp(self):
@@ -108,6 +134,8 @@ class ModelGroups(QSqlQueryModel):
 class dlgAddExp(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.__filename = ''
 
         lblDate = QLabel('Дата', parent=self)
         self.__deDate = QDateEdit(parent=self)
@@ -218,13 +246,10 @@ class dlgAddExp(QDialog):
         btnCategory.clicked.connect(self.btnCategory_clicked)
         btnGroup.clicked.connect(self.btnGroup_clicked)
 
-
     def btnFileOpenclicked(self):
-        filename = QFileDialog.getOpenFileName(self, 'Открыть файл', os.getcwd(), 'Excel files (*.xlsx)')[0]
+        self.__filename = QFileDialog.getOpenFileName(self, 'Открыть файл', os.getcwd(), 'Excel files (*.xlsx)')[0]
         text = self.lblFileName.text()
-        self.lblFileName.setText(text + filename)
-        print(filename)
-        pass
+        self.lblFileName.setText(text + self.__filename)
 
     def btnOk_clicked(self):
         if not self.checkForm():
@@ -247,6 +272,8 @@ class dlgAddExp(QDialog):
             return False
         if self.cuvette is None:
             return False
+        if self.filename is None:
+            return False
         return True
 
     def btnGroup_clicked(self):
@@ -265,23 +292,37 @@ class dlgAddExp(QDialog):
         sql = 'SELECT MAX(number) FROM nameExp'
         cur.execute(sql)
         record = cur.fetchone()
-        result = record[0]
+        result = record[0] + 1
         con.close()
         return result
+
+    @property
+    def filename(self):
+        print('filename propery')
+        result: str = self.__filename.strip()
+        if os.path.exists(self.__filename):
+            return result
+        else:
+            QMessageBox.information(self, 'File', 'Выберите файл')
+            return None
+
+    @filename.setter
+    def filename(self, value):
+        print('filename setter')
+        self.__filename = value
 
     @property
     def number(self):
         result: str = self.__edNumber.text().strip()
         if not result:
             t = 'Номер'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
 
     @number.setter
     def number(self, value):
-        print('setter')
         self.__edNumber.setText((value))
 
     @property
@@ -289,7 +330,7 @@ class dlgAddExp(QDialog):
         result: str = self.__deDate.text().strip()
         if not result:
             t = 'Дата: '
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
@@ -303,7 +344,7 @@ class dlgAddExp(QDialog):
         result: str = self.__edName.text().strip()
         if not result:
             t = 'Наименование'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
@@ -317,7 +358,7 @@ class dlgAddExp(QDialog):
         result: str = self.__edSubstance.text().strip()
         if not result:
             t = 'Образец'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
@@ -331,7 +372,7 @@ class dlgAddExp(QDialog):
         result: str = self.__edCount.text().strip()
         if not result:
             t = 'Процент'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
@@ -345,7 +386,7 @@ class dlgAddExp(QDialog):
         result: str = self.__edTemp.text().strip()
         if not result:
             t = 'Температура'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
@@ -359,7 +400,7 @@ class dlgAddExp(QDialog):
         result: str = self.__edCuvette.text().strip()
         if not result:
             t = 'Кювета'
-            QMessageBox.information(self, t, 'Заполните поле: '+t)
+            QMessageBox.information(self, t, 'Заполните поле: ' + t)
             return None
         else:
             return result
