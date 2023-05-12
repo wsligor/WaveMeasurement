@@ -48,9 +48,6 @@ class Model(QSqlQueryModel):
         self.refreshNameExp()
 
     def addDataSet(self, filename, id_nameExp, cur):
-        print(filename, id_nameExp, cur)
-        lid = id_nameExp
-
         book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
         sheet: openpyxl.worksheet.worksheet.Worksheet = book.active
 
@@ -61,7 +58,7 @@ class Model(QSqlQueryModel):
             waveLength = sheet.cell(row=i, column=1).value
             opticDensity = sheet.cell(row=i, column=2).value
             transparency = sheet.cell(row=i, column=3).value
-            str_dataExp = (waveLength, opticDensity, transparency, lid)
+            str_dataExp = (waveLength, opticDensity, transparency, id_nameExp)
 
             dataExp.append(str_dataExp)
 
