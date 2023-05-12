@@ -4,6 +4,7 @@ from PySide6 import QtGui
 
 import matplotlib.pyplot as plt
 import numpy as np
+import sqlite3 as sl
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from MainMenu import MainMenu
@@ -72,24 +73,50 @@ class MainWindow (QMainWindow):
 
 class MPLGraph(FigureCanvasQTAgg):
     def __init__(self):
-        self.fig = plt.figure(figsize=(2, 2), layout="tight")
+        self.fig = plt.figure(layout="tight") #figsize=(2, 2),
         self.ax = None
         super().__init__(self.fig)
         self.style = "default"
-        self.title = ""
-        self.noise_scale = 0.1
+        self.title = "Wave measurement"
         self.plot()
 
     def plot(self):
         with plt.style.context(self.style):
             if self.ax:
                 self.fig.delaxes(self.ax)
-            self.ax = self.fig.add_subplot(111)
-            x = np.linspace(0, 1)
-            noise = np.random.normal(0, self.noise_scale, size=(len(x),))
-            y = x + noise
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
+            # self.ax.set_xlim(-5, 4)  # мин и мах координаты х
+            self.ax.set_ylim(94, 107)  # мин и мах координаты y
+
+            x = []
+            y = []
+            z = []
+            con = sl.connect('SFM.db')
+            cur = con.cursor()
+            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+            cur.execute(sql)
+            rows = cur.fetchall()
+            for i in rows:
+                x.append(i[0])
+
+            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+            cur.execute(sql)
+            collumns = cur.fetchall()
+            for i in collumns:
+                y.append(i[0])
+
+            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
+            cur.execute(sql)
+            collumns = cur.fetchall()
+            for i in collumns:
+                z.append(i[0])
+
+            con.commit()
+
             self.ax.plot(x, y)
+            self.ax.plot(x, z)
             self.ax.set_title(self.title)
-            self.ax.set_xlabel("t")
-            self.ax.set_ylabel("signal")
+            self.ax.set_xlabel("waveLength")
+            self.ax.set_ylabel("transparency")
             self.draw()
