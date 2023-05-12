@@ -86,7 +86,7 @@ class MPLGraph(FigureCanvasQTAgg):
                 self.fig.delaxes(self.ax)
             self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-            # self.ax.set_xlim(-5, 4)  # мин и мах координаты х
+            self.ax.set_xlim(290, 1010)  # мин и мах координаты х
             self.ax.set_ylim(94, 107)  # мин и мах координаты y
 
             x = []
