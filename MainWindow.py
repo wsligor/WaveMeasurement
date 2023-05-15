@@ -18,7 +18,7 @@ class MainWindow (QMainWindow):
         super().__init__(parent)
         self.resize(1700, 600)
 
-        self.lset = []
+        self.countSelectTableRows = []
         self.arrayMeanSave = []
 
         main_menu = MainMenu(parent=self)
@@ -46,11 +46,27 @@ class MainWindow (QMainWindow):
         btnMeanCalcSave = QPushButton('Записать\n среднию линию', parent=self)
         btnMeanCalcSave.setMaximumWidth(120)
 
+        btnMinCalc = QPushButton('Показать\n линию минимума', parent=self)
+        btnMinCalc.setMaximumWidth(120)
+
+        btnMinCalcSave = QPushButton('Сохранить\n линию минимума', parent=self)
+        btnMinCalcSave.setMaximumWidth(120)
+
+        btnMaxCalc = QPushButton('Показать\n линию максимума', parent=self)
+        btnMaxCalc.setMaximumWidth(120)
+
+        btnMaxCalcSave = QPushButton('Сохранить\n линию максимума', parent=self)
+        btnMaxCalcSave.setMaximumWidth(120)
+
         layVButtonCalk = QVBoxLayout()
 
         layVButtonCalk.addWidget(btnCorrelationCalc)
         layVButtonCalk.addWidget(btnMeanCalc)
         layVButtonCalk.addWidget(btnMeanCalcSave)
+        layVButtonCalk.addWidget(btnMinCalc)
+        layVButtonCalk.addWidget(btnMinCalcSave)
+        layVButtonCalk.addWidget(btnMaxCalc)
+        layVButtonCalk.addWidget(btnMaxCalcSave)
         layVButtonCalk.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         layV = QVBoxLayout(self)
@@ -86,13 +102,56 @@ class MainWindow (QMainWindow):
         btnCorrelationCalc.clicked.connect(self.btnCorrelationCalc_clicked)
         btnMeanCalc.clicked.connect(self.btnMeanCalc_clicked)
         btnMeanCalcSave.clicked.connect(self.btnMeanCalcSave_clicked)
+        btnMinCalc.clicked.connect(self.btnMinCalc_clicked)
+        btnMinCalcSave.clicked.connect(self.btnMinCalcSave_clicked)
+        btnMaxCalc.clicked.connect(self.btnMaxCalc_clicked)
+        btnMaxCalcSave.clicked.connect(self.btnMaxCalcSave_clicked)
 
+    def btnMaxCalcSave_clicked(self):
+        pass
+
+    def btnMaxCalc_clicked(self):
+        #TODO Убрать заглушку после завершения отладки функции
+        # if len(self.countSelectTableRows) < 2:
+        #     print('2')
+        #     return
+
+        # Заполняем массив 0
+        array_result = [0]*700
+
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        for id_sel in self.ne.idSelectTableNameExp:
+            sql_text = f"""SELECT transparency 
+                            FROM dataExp 
+                            WHERE id_nameExp = {id_sel} and waveLength > 300"""
+            cur.execute(sql_text)
+            data = cur.fetchall()
+            for p in range(len(array_result)):
+                # ar = array_result[p]
+                # d = data[p][0]
+                # if d < ar:
+                if data[p][0] > array_result[p]:
+                    array_result[p] = data[p][0]
+        self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
+        # print(array_result)
+
+        pass
+
+    def btnMinCalcSave_clicked(self):
+        pass
+
+    def btnMinCalc_clicked(self):
+        pass
+
+
+    # TODO Обеспечить разный вход для загрузки файла и сохранения расченых данных
     def btnMeanCalcSave_clicked(self):
         self.ne.addNameExpMeanCalcSave(self.arrayMeanSave)
         pass
 
     def btnMeanCalc_clicked(self):
-        if len(self.lset) < 2:
+        if len(self.countSelectTableRows) < 2:
             print('Выберите более 1 строки')
             return
         a = []
@@ -119,12 +178,12 @@ class MainWindow (QMainWindow):
         # print(self.arrayMeanSave)
 
     def btnCorrelationCalc_clicked(self):
-        if len(self.lset) < 2:
+        if len(self.countSelectTableRows) < 2:
             print('Выберите более 1 строки')
             return
 
         id_list = []
-        for i in self.lset:
+        for i in self.countSelectTableRows:
             id_list.append(i)
 
         l = []
@@ -165,5 +224,5 @@ class MainWindow (QMainWindow):
         self.graph.plot(lset)
 
     def tvNameExp_clickedMM(self):
-        self.lset = self.ne.tvNameExp_clicked()
-        self.drawLineChartMultiMM(self.lset)
+        self.countSelectTableRows = self.ne.tvNameExp_clicked()
+        self.drawLineChartMultiMM(self.countSelectTableRows)
