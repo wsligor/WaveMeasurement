@@ -87,8 +87,8 @@ class MainWindow (QMainWindow):
             sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
             cur.execute(sql)
             data = cur.fetchall()
-            for k in data:
-                z = A.append(data[0])
+            # for k in data:
+            #     z = A.append(data[0])
         print(z)
 
 
