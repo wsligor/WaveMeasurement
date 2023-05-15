@@ -111,12 +111,12 @@ class MainWindow (QMainWindow):
             for i in range(lenA):
                 a_result[i] = a_result[i] + a[i]
             a.clear()
+        r = len(self.ne.idSelectTableNameExp)
         for i in range(700):
-            r = len(self.ne.idSelectTableNameExp)
             a_result[i] = round(a_result[i]/r, 1)
         self.graph.plot_meam(self.ne.idSelectTableNameExp, a_result)
         self.arrayMeanSave = a_result
-        print(self.arrayMeanSave)
+        # print(self.arrayMeanSave)
 
 
 

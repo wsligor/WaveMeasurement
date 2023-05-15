@@ -53,12 +53,12 @@ class Model(QSqlQueryModel):
     def addDataSetMeanCalcSave(self, array, id_nameExp, cur):
         # book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
         # sheet: openpyxl.worksheet.worksheet.Worksheet = book.active
-
+        print('array = {}'.format(len(array)))
         max_rows = 810
         dataExp = []
 
-        for i in range(810-1):
-            waveLength = i + 190
+        for i in range(700):
+            waveLength = i + 301
             opticDensity = 0
             transparency = array[i]
             str_dataExp = (waveLength, opticDensity, transparency, id_nameExp)
