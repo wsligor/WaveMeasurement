@@ -37,6 +37,40 @@ class Model(QSqlQueryModel):
                 return Qt.AlignmentFlag.AlignCenter
         return super().data(item, role)
 
+    def addMeanCalcSave(self, values, array):
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        sql = '''INSERT INTO nameExp 
+                (date, number, name, substance, count, temperature, cuvette, note) 
+                    values (?, ?, ?, ?, ?, ?, ?, ?)'''
+        cur.execute(sql, values)
+        id_nameExp = cur.lastrowid
+        self.addDataSetMeanCalcSave(array, id_nameExp, cur)
+        con.commit()
+        con.close()
+        self.refreshNameExp()
+
+    def addDataSetMeanCalcSave(self, array, id_nameExp, cur):
+        # book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
+        # sheet: openpyxl.worksheet.worksheet.Worksheet = book.active
+
+        max_rows = 810
+        dataExp = []
+        print(len(array))
+
+        for i in range(810-1):
+            waveLength = i + 190
+            opticDensity = 0
+            transparency = array[i]
+            str_dataExp = (waveLength, opticDensity, transparency, id_nameExp)
+
+            dataExp.append(str_dataExp)
+
+        sqlite_insert_query = """INSERT INTO dataExp (waveLength, opticDensity, transparency, id_nameExp)
+                               VALUES (?,?,?,?)"""
+
+        cur.executemany(sqlite_insert_query, dataExp)
+
     def add(self, values, filename):
         con = sl.connect('SFM.db')
         cur = con.cursor()
@@ -49,6 +83,7 @@ class Model(QSqlQueryModel):
         con.commit()
         con.close()
         self.refreshNameExp()
+
 
     def addDataSet(self, filename, id_nameExp, cur):
         book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
@@ -107,53 +142,9 @@ class NameExp(QTableView):
             l.append((self.model.index(p.row(), 0).data()))
         lset = set(l)
         self.idSelectTableNameExp = list(lset)
-        print(lset)
-        return lset
-        # parent.
-        # self.drawLineChartMulti(list(lset))
 
-    # def drawLineChartMulti(lset):
-        # MainWindow.drawLineChartMultiMM()
-    #     with plt.style.context(graph.style):
-    #         if self.ax:
-    #             self.fig.delaxes(self.ax)
-    #         self.ax = self.fig.add_subplot(1, 1, 1)
-    #         self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-    #         self.ax.set_xlim(290, 1010)  # мин и мах координаты х
-    #         self.ax.set_ylim(94, 107)  # мин и мах координаты y
-    #
-    #         x = []
-    #         y = []
-    #         z = []
-    #         con = sl.connect('SFM.db')
-    #         cur = con.cursor()
-    #         sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-    #         cur.execute(sql)
-    #         rows = cur.fetchall()
-    #         for i in rows:
-    #             x.append(i[0])
-    #
-    #         sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-    #         cur.execute(sql)
-    #         collumns = cur.fetchall()
-    #         for i in collumns:
-    #             y.append(i[0])
-    #
-    #         sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
-    #         cur.execute(sql)
-    #         collumns = cur.fetchall()
-    #         for i in collumns:
-    #             z.append(i[0])
-    #
-    #         con.commit()
-    #
-    #         self.ax.plot(x, y)
-    #         self.ax.plot(x, z)
-    #         self.ax.set_title(self.title)
-    #         self.ax.set_xlabel("waveLength")
-    #         self.ax.set_ylabel("transparency")
-    #         self.draw()
-    #     pass
+        return lset
+
 
     @Slot()
     def addNameExp(self):
@@ -163,6 +154,15 @@ class NameExp(QTableView):
             values = [dia.dateExp, dia.number, dia.name, dia.substance,
                       dia.countExp, dia.tempExp, dia.cuvette, dia.description]
             self.model.add(values, dia.filename)
+
+    @Slot()
+    def addNameExpMeanCalcSave(self, array):
+        values = []
+        dia = dlgAddExp()
+        if dia.exec():
+            values = [dia.dateExp, dia.number, dia.name, dia.substance,
+                      dia.countExp, dia.tempExp, dia.cuvette, dia.description]
+            self.model.addMeanCalcSave(values, array)
 
     @Slot()
     def updateNameExp(self):
@@ -529,6 +529,48 @@ class MPLGraph(FigureCanvasQTAgg):
                     y.append(i[0])
                 self.ax.plot(x, y)
                 y.clear()
+
+            con.commit()
+            self.draw()
+
+    def plot_meam(self, lset, a_meam):
+        # print('Список = {}'.format(lset))
+        with plt.style.context(self.style):
+            if self.ax:
+                self.fig.delaxes(self.ax)
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
+            # self.ax.set_xlim(290, 1010)  # мин и мах координаты х
+            # self.ax.set_ylim(94, 107)  # мин и мах координаты y
+            self.ax.set_title(self.title)
+            self.ax.set_xlabel("waveLength")
+            self.ax.set_ylabel("transparency")
+            print(type(lset))
+            for id in lset:
+                id_x = id
+                continue
+            print(id_x)
+            x = []
+            y = []
+            con = sl.connect('SFM.db')
+            cur = con.cursor()
+            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
+            cur.execute(sql)
+            rows = cur.fetchall()
+            for i in rows:
+                x.append(i[0])
+
+
+            for l in lset:
+                sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(l)
+                cur.execute(sql)
+                collumns = cur.fetchall()
+                for i in collumns:
+                    y.append(i[0])
+                self.ax.plot(x, y)
+                y.clear()
+
+            self.ax.plot(x, a_meam)
 
             con.commit()
             self.draw()
