@@ -56,7 +56,6 @@ class Model(QSqlQueryModel):
 
         max_rows = 810
         dataExp = []
-        print(len(array))
 
         for i in range(810-1):
             waveLength = i + 190
@@ -360,7 +359,6 @@ class dlgAddExp(QDialog):
 
     @property
     def filename(self):
-        print('filename propery')
         result: str = self.__filename.strip()
         if os.path.exists(self.__filename):
             return result
@@ -370,7 +368,6 @@ class dlgAddExp(QDialog):
 
     @filename.setter
     def filename(self, value):
-        print('filename setter')
         self.__filename = value
 
     @property
@@ -494,7 +491,6 @@ class MPLGraph(FigureCanvasQTAgg):
         # self.plot()
 
     def plot(self, lset):
-        # print('Список = {}'.format(lset))
         with plt.style.context(self.style):
             if self.ax:
                 self.fig.delaxes(self.ax)
@@ -505,11 +501,9 @@ class MPLGraph(FigureCanvasQTAgg):
             self.ax.set_title(self.title)
             self.ax.set_xlabel("waveLength")
             self.ax.set_ylabel("transparency")
-            print(type(lset))
             for id in lset:
                 id_x = id
                 continue
-            print(id_x)
             x = []
             y = []
             con = sl.connect('SFM.db')
@@ -534,7 +528,6 @@ class MPLGraph(FigureCanvasQTAgg):
             self.draw()
 
     def plot_meam(self, lset, a_meam):
-        # print('Список = {}'.format(lset))
         with plt.style.context(self.style):
             if self.ax:
                 self.fig.delaxes(self.ax)
@@ -545,11 +538,9 @@ class MPLGraph(FigureCanvasQTAgg):
             self.ax.set_title(self.title)
             self.ax.set_xlabel("waveLength")
             self.ax.set_ylabel("transparency")
-            print(type(lset))
             for id in lset:
                 id_x = id
                 continue
-            print(id_x)
             x = []
             y = []
             con = sl.connect('SFM.db')
