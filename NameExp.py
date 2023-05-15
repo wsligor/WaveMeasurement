@@ -3,6 +3,7 @@ from typing import Any
 from datetime import date
 import sqlite3 as sl
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 import openpyxl as openpyxl
 from PySide6.QtCore import Qt, Slot, QModelIndex
@@ -12,7 +13,7 @@ from PySide6.QtSql import QSqlQueryModel
 
 from Category import dlgCategories
 from Group import dlgGroups
-from MainWindow import MainWindow.gr
+
 
 
 class Model(QSqlQueryModel):
@@ -94,7 +95,7 @@ class NameExp(QTableView):
         # убираем вертикальную нумерацию строк
         hv.hide()
 
-        self.clicked.connect(self.tvNameExp_clicked)
+        # self.clicked.connect(self.tvNameExp_clicked)
 
     def tvNameExp_clicked(self):
         l = []
@@ -107,49 +108,52 @@ class NameExp(QTableView):
         lset = set(l)
         self.idSelectTableNameExp = list(lset)
         print(lset)
-        self.drawLineChartMulti(list(lset))
+        return lset
+        # parent.
+        # self.drawLineChartMulti(list(lset))
 
-    def drawLineChartMulti(lset):
-        with plt.style.context(graph.style):
-            if self.ax:
-                self.fig.delaxes(self.ax)
-            self.ax = self.fig.add_subplot(1, 1, 1)
-            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-            self.ax.set_xlim(290, 1010)  # мин и мах координаты х
-            self.ax.set_ylim(94, 107)  # мин и мах координаты y
-
-            x = []
-            y = []
-            z = []
-            con = sl.connect('SFM.db')
-            cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-            cur.execute(sql)
-            rows = cur.fetchall()
-            for i in rows:
-                x.append(i[0])
-
-            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-            cur.execute(sql)
-            collumns = cur.fetchall()
-            for i in collumns:
-                y.append(i[0])
-
-            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
-            cur.execute(sql)
-            collumns = cur.fetchall()
-            for i in collumns:
-                z.append(i[0])
-
-            con.commit()
-
-            self.ax.plot(x, y)
-            self.ax.plot(x, z)
-            self.ax.set_title(self.title)
-            self.ax.set_xlabel("waveLength")
-            self.ax.set_ylabel("transparency")
-            self.draw()
-        pass
+    # def drawLineChartMulti(lset):
+        # MainWindow.drawLineChartMultiMM()
+    #     with plt.style.context(graph.style):
+    #         if self.ax:
+    #             self.fig.delaxes(self.ax)
+    #         self.ax = self.fig.add_subplot(1, 1, 1)
+    #         self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
+    #         self.ax.set_xlim(290, 1010)  # мин и мах координаты х
+    #         self.ax.set_ylim(94, 107)  # мин и мах координаты y
+    #
+    #         x = []
+    #         y = []
+    #         z = []
+    #         con = sl.connect('SFM.db')
+    #         cur = con.cursor()
+    #         sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+    #         cur.execute(sql)
+    #         rows = cur.fetchall()
+    #         for i in rows:
+    #             x.append(i[0])
+    #
+    #         sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+    #         cur.execute(sql)
+    #         collumns = cur.fetchall()
+    #         for i in collumns:
+    #             y.append(i[0])
+    #
+    #         sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
+    #         cur.execute(sql)
+    #         collumns = cur.fetchall()
+    #         for i in collumns:
+    #             z.append(i[0])
+    #
+    #         con.commit()
+    #
+    #         self.ax.plot(x, y)
+    #         self.ax.plot(x, z)
+    #         self.ax.set_title(self.title)
+    #         self.ax.set_xlabel("waveLength")
+    #         self.ax.set_ylabel("transparency")
+    #         self.draw()
+    #     pass
 
     @Slot()
     def addNameExp(self):
@@ -478,3 +482,53 @@ class dlgAddExp(QDialog):
     @description.setter
     def description(self, value):
         self.__teDescription.setPlainText(value)
+
+
+class MPLGraph(FigureCanvasQTAgg):
+    def __init__(self):
+        self.fig = plt.figure(layout="tight") #figsize=(2, 2),
+        self.ax = None
+        super().__init__(self.fig)
+        self.style = "default"
+        self.title = "Wave measurement"
+        # self.plot()
+
+    def plot(self, lset):
+        # print('Список = {}'.format(lset))
+        with plt.style.context(self.style):
+            if self.ax:
+                self.fig.delaxes(self.ax)
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
+            # self.ax.set_xlim(290, 1010)  # мин и мах координаты х
+            # self.ax.set_ylim(94, 107)  # мин и мах координаты y
+            self.ax.set_title(self.title)
+            self.ax.set_xlabel("waveLength")
+            self.ax.set_ylabel("transparency")
+            print(type(lset))
+            for id in lset:
+                id_x = id
+                continue
+            print(id_x)
+            x = []
+            y = []
+            con = sl.connect('SFM.db')
+            cur = con.cursor()
+            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
+            cur.execute(sql)
+            rows = cur.fetchall()
+            for i in rows:
+                x.append(i[0])
+
+
+            for l in lset:
+                sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(l)
+                cur.execute(sql)
+                collumns = cur.fetchall()
+                for i in collumns:
+                    y.append(i[0])
+                self.ax.plot(x, y)
+                y.clear()
+
+            con.commit()
+            self.draw()

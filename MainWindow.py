@@ -10,11 +10,14 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from MainMenu import MainMenu
 from ToolBar import ToolBar
 from NameExp import NameExp
+from NameExp import MPLGraph
 
 class MainWindow (QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(1700, 600)
+
+        self.lset = []
 
         main_menu = MainMenu(parent=self)
         self.setMenuBar(main_menu)
@@ -29,20 +32,29 @@ class MainWindow (QMainWindow):
         self.graph =MPLGraph()
         self.graph.resize(1000, 400)
 
-        self.btnOk = QPushButton('Ок', parent=self)
-        self.btnCancel = QPushButton('Отмена', parent=self)
+        btnOk = QPushButton('Ок', parent=self)
+        btnCancel = QPushButton('Отмена', parent=self)
+
+        btnCorrelationCalc = QPushButton('Корреляция', parent=self)
+        btnCorrelationCalc.setMaximumWidth(100)
+
+        layVButtonCalk = QVBoxLayout()
+
+        layVButtonCalk.addWidget(btnCorrelationCalc)
+        layVButtonCalk.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         layV = QVBoxLayout(self)
 
         layHTableGraph = QHBoxLayout()
         layHTableGraph.addWidget(self.ne)
+        layHTableGraph.addLayout(layVButtonCalk)
         layHTableGraph.addWidget(self.graph)
 
         layV.addLayout(layHTableGraph)
 
         layH = QHBoxLayout()
-        layH.addWidget(self.btnOk)
-        layH.addWidget(self.btnCancel)
+        layH.addWidget(btnOk)
+        layH.addWidget(btnCancel)
 
         layV.addLayout(layH)
 
@@ -60,6 +72,25 @@ class MainWindow (QMainWindow):
         tool_bar.tbAdd.triggered.connect(self.ne.addNameExp)
         tool_bar.tbEdit.triggered.connect(self.ne.updateNameExp)
         tool_bar.tbDelete.triggered.connect(self.ne.deleteNameExp)
+        self.ne.clicked.connect(self.tvNameExp_clickedMM)
+        btnCorrelationCalc.clicked.connect(self.btnCorrelationCalc_clicked)
+
+    def btnCorrelationCalc_clicked(self):
+        if len(self.lset) < 2:
+            print('Выберите более 1 строки')
+            return
+
+        A = np.array([])
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        for id_x in self.lset:
+            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
+            cur.execute(sql)
+            data = cur.fetchall()
+            for k in data:
+                z = A.append(data[0])
+        print(z)
+
 
     @Slot()
     def about_qt(self):
@@ -71,52 +102,9 @@ class MainWindow (QMainWindow):
         text = "Анализ измерений спектофотометра"
         QMessageBox.about(self, title, text)
 
-class MPLGraph(FigureCanvasQTAgg):
-    def __init__(self):
-        self.fig = plt.figure(layout="tight") #figsize=(2, 2),
-        self.ax = None
-        super().__init__(self.fig)
-        self.style = "default"
-        self.title = "Wave measurement"
-        self.plot()
+    def drawLineChartMultiMM(self, lset):
+        self.graph.plot(lset)
 
-    def plot(self):
-        with plt.style.context(self.style):
-            if self.ax:
-                self.fig.delaxes(self.ax)
-            self.ax = self.fig.add_subplot(1, 1, 1)
-            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-            self.ax.set_xlim(290, 1010)  # мин и мах координаты х
-            self.ax.set_ylim(94, 107)  # мин и мах координаты y
-
-            x = []
-            y = []
-            z = []
-            con = sl.connect('SFM.db')
-            cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-            cur.execute(sql)
-            rows = cur.fetchall()
-            for i in rows:
-                x.append(i[0])
-
-            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
-            cur.execute(sql)
-            collumns = cur.fetchall()
-            for i in collumns:
-                y.append(i[0])
-
-            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
-            cur.execute(sql)
-            collumns = cur.fetchall()
-            for i in collumns:
-                z.append(i[0])
-
-            con.commit()
-
-            self.ax.plot(x, y)
-            self.ax.plot(x, z)
-            self.ax.set_title(self.title)
-            self.ax.set_xlabel("waveLength")
-            self.ax.set_ylabel("transparency")
-            self.draw()
+    def tvNameExp_clickedMM(self):
+        self.lset = self.ne.tvNameExp_clicked()
+        self.drawLineChartMultiMM(self.lset)
