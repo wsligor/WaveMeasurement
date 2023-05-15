@@ -2,6 +2,7 @@ import os, os.path
 from typing import Any
 from datetime import date
 import sqlite3 as sl
+import matplotlib.pyplot as plt
 
 import openpyxl as openpyxl
 from PySide6.QtCore import Qt, Slot, QModelIndex
@@ -11,6 +12,7 @@ from PySide6.QtSql import QSqlQueryModel
 
 from Category import dlgCategories
 from Group import dlgGroups
+from MainWindow import MainWindow.gr
 
 
 class Model(QSqlQueryModel):
@@ -72,6 +74,8 @@ class NameExp(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.idSelectTableNameExp = []
+
         self.model = Model(parent=self)
         self.setModel(self.model)
 
@@ -89,6 +93,63 @@ class NameExp(QTableView):
         hv = self.verticalHeader()
         # убираем вертикальную нумерацию строк
         hv.hide()
+
+        self.clicked.connect(self.tvNameExp_clicked)
+
+    def tvNameExp_clicked(self):
+        l = []
+        lset = []
+        i: QModelIndex = self.currentIndex().row()
+        id = self.model.index(i, 0).data()
+        i: QModelIndex = self.selectedIndexes()
+        for p in i:
+            l.append((self.model.index(p.row(), 0).data()))
+        lset = set(l)
+        self.idSelectTableNameExp = list(lset)
+        print(lset)
+        self.drawLineChartMulti(list(lset))
+
+    def drawLineChartMulti(lset):
+        with plt.style.context(graph.style):
+            if self.ax:
+                self.fig.delaxes(self.ax)
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
+            self.ax.set_xlim(290, 1010)  # мин и мах координаты х
+            self.ax.set_ylim(94, 107)  # мин и мах координаты y
+
+            x = []
+            y = []
+            z = []
+            con = sl.connect('SFM.db')
+            cur = con.cursor()
+            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+            cur.execute(sql)
+            rows = cur.fetchall()
+            for i in rows:
+                x.append(i[0])
+
+            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 30 and waveLength > 300'''
+            cur.execute(sql)
+            collumns = cur.fetchall()
+            for i in collumns:
+                y.append(i[0])
+
+            sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = 50 and waveLength > 300'''
+            cur.execute(sql)
+            collumns = cur.fetchall()
+            for i in collumns:
+                z.append(i[0])
+
+            con.commit()
+
+            self.ax.plot(x, y)
+            self.ax.plot(x, z)
+            self.ax.set_title(self.title)
+            self.ax.set_xlabel("waveLength")
+            self.ax.set_ylabel("transparency")
+            self.draw()
+        pass
 
     @Slot()
     def addNameExp(self):
