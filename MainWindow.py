@@ -1,5 +1,5 @@
 import numpy
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QToolBar
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QToolBar, QLabel
 from PySide6.QtCore import Slot, Qt
 from PySide6 import QtGui
 
@@ -40,6 +40,8 @@ class MainWindow (QMainWindow):
         btnCorrelationCalc = QPushButton('Корреляция', parent=self)
         btnCorrelationCalc.setMaximumWidth(120)
 
+        self.lblCorrel = QLabel('Cor = :', parent=self)
+
         btnMeanCalc = QPushButton('Показать\n среднию линию', parent=self)
         btnMeanCalc.setMaximumWidth(120)
 
@@ -61,6 +63,7 @@ class MainWindow (QMainWindow):
         layVButtonCalk = QVBoxLayout()
 
         layVButtonCalk.addWidget(btnCorrelationCalc)
+        layVButtonCalk.addWidget(self.lblCorrel)
         layVButtonCalk.addWidget(btnMeanCalc)
         layVButtonCalk.addWidget(btnMeanCalcSave)
         layVButtonCalk.addWidget(btnMinCalc)
@@ -111,14 +114,11 @@ class MainWindow (QMainWindow):
         pass
 
     def btnMaxCalc_clicked(self):
-        #TODO Убрать заглушку после завершения отладки функции
-        # if len(self.countSelectTableRows) < 2:
-        #     print('2')
-        #     return
-
+        if len(self.countSelectTableRows) < 2:
+            QMessageBox.information(self, 'График', 'Выделите 2 строки и более')
+            return
         # Заполняем массив 0
         array_result = [0]*700
-
         con = sl.connect('SFM.db')
         cur = con.cursor()
         for id_sel in self.ne.idSelectTableNameExp:
@@ -128,15 +128,10 @@ class MainWindow (QMainWindow):
             cur.execute(sql_text)
             data = cur.fetchall()
             for p in range(len(array_result)):
-                # ar = array_result[p]
-                # d = data[p][0]
-                # if d < ar:
                 if data[p][0] > array_result[p]:
                     array_result[p] = data[p][0]
+        con.close()
         self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
-        # print(array_result)
-
-        pass
 
     def btnMinCalcSave_clicked(self):
         pass
@@ -207,6 +202,8 @@ class MainWindow (QMainWindow):
         l.clear()
 
         c = np.corrcoef(A1, A2)
+        p = c[0]
+        self.lblCorrel.setText(str(p))
 
 
 
