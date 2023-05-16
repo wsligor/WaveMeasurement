@@ -118,8 +118,6 @@ class MainWindow (QMainWindow):
         self.arrayMeanSave = a_result
         # print(self.arrayMeanSave)
 
-
-
     def btnCorrelationCalc_clicked(self):
         if len(self.lset) < 2:
             print('Выберите более 1 строки')
