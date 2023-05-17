@@ -481,10 +481,10 @@ class dlgAddExp(QDialog):
 
 class MPLGraph(FigureCanvasQTAgg):
     def __init__(self):
-        self.fig = plt.figure(layout="tight") #figsize=(2, 2),
+        self.fig = plt.figure(layout='constrained') #figsize=(2, 2),
         self.ax = None
         super().__init__(self.fig)
-        self.style = "default"
+        self.style = "seaborn-v0_8-whitegrid"
         self.title = "Wave measurement"
         # self.plot()
 
