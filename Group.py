@@ -83,7 +83,6 @@ class dlgGroups(QDialog):
     def tvGroup_doubleClicked(self):
         row = self.tvGroup.currentIndex().row()
         i = self.tvGroup.model().record(row).value(0)
-        print(i)
         self.accept()
 
     @Slot()

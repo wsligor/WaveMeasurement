@@ -53,7 +53,6 @@ class Model(QSqlQueryModel):
     def addDataSetMeanCalcSave(self, array, id_nameExp, cur):
         # book: openpyxl.workbook.workbook.Workbook = openpyxl.load_workbook(filename)
         # sheet: openpyxl.worksheet.worksheet.Worksheet = book.active
-        print('array = {}'.format(len(array)))
         max_rows = 810
         dataExp = []
 
@@ -129,21 +128,16 @@ class NameExp(QTableView):
         # убираем вертикальную нумерацию строк
         hv.hide()
 
-        # self.clicked.connect(self.tvNameExp_clicked)
+        self.clicked.connect(self.tvNameExp_clicked)
 
     def tvNameExp_clicked(self):
-        l = []
-        lset = []
-        i: QModelIndex = self.currentIndex().row()
-        id = self.model.index(i, 0).data()
         i: QModelIndex = self.selectedIndexes()
-        for p in i:
-            l.append((self.model.index(p.row(), 0).data()))
-        lset = set(l)
-        self.idSelectTableNameExp = list(lset)
-
-        return lset
-
+        # for p in i:
+        #     l.append((self.model.index(p.row(), 0).data()))
+        # l = [self.model.index(p.row(), 0).data() for p in i]
+        # lset = set([self.model.index(p.row(), 0).data() for p in i])
+        l = list(set([self.model.index(p.row(), 0).data() for p in i]))
+        self.idSelectTableNameExp = l
 
     @Slot()
     def addNameExp(self):
@@ -344,7 +338,6 @@ class dlgAddExp(QDialog):
         # row = dlg_groups.tvGroup.currentIndex()
         # p = dlg_groups.tvGroup.model().record(row).value(0)
         # self.__cbGroup.setCurrentIndex(row)
-        # print(p)
         self.modelGroups.refreshGroups()
 
     def btnCategory_clicked(self):
@@ -495,6 +488,8 @@ class MPLGraph(FigureCanvasQTAgg):
         self.title = "Wave measurement"
         # self.plot()
 
+
+    # TODO Провести рефакторинг кода функции
     def plot(self, lset):
         with plt.style.context(self.style):
             if self.ax:
@@ -513,7 +508,7 @@ class MPLGraph(FigureCanvasQTAgg):
             y = []
             con = sl.connect('SFM.db')
             cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
+            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(30)
             cur.execute(sql)
             rows = cur.fetchall()
             for i in rows:

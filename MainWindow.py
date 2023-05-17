@@ -41,7 +41,7 @@ class MainWindow (QMainWindow):
         btnCorrelationCalc = QPushButton('Корреляция', parent=self)
         btnCorrelationCalc.setMaximumWidth(120)
 
-        self.lblCorrel = QLabel('Cor = :', parent=self)
+        self.lblCorrel = QLabel('Cor = : ', parent=self)
 
         btnMeanCalc = QPushButton('Показать\n среднию линию', parent=self)
         btnMeanCalc.setMaximumWidth(120)
@@ -158,10 +158,6 @@ class MainWindow (QMainWindow):
         con.close()
         self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
 
-        pass
-
-
-
     # TODO Обеспечить разный вход для загрузки файла и сохранения расченых данных
     def btnMeanCalcSave_clicked(self):
         dlgAddExp.filename = 'R'
@@ -193,46 +189,27 @@ class MainWindow (QMainWindow):
             a_result[i] = round(a_result[i]/r, 1)
         self.graph.plot_meam(self.ne.idSelectTableNameExp, a_result)
         self.arrayMeanSave = a_result
-        # print(self.arrayMeanSave)
 
     def btnCorrelationCalc_clicked(self):
         if len(self.countSelectTableRows) < 2:
             print('Выберите более 1 строки')
             return
 
-        id_list = []
-        for i in self.countSelectTableRows:
-            id_list.append(i)
-
-        l = []
-        A1 = np.array([])
-        A2 = np.array([])
         con = sl.connect('SFM.db')
         cur = con.cursor()
-        sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_list[0])
+        sql = f'''SELECT transparency FROM dataExp WHERE id_nameExp = {self.countSelectTableRows[0]} and waveLength > 300'''
         cur.execute(sql)
-        data = cur.fetchall()
-        # list_proba = (data(p) for p in data)
-        # for p in list_proba:
-        #     print(p)
-        for k in data:
-            l.append(k[0])
-        A1 = numpy.array(l)
-        l.clear()
-        sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_list[1])
+        data1 = cur.fetchall()
+        data1 = [p[0] for p in data1]
+        sql = f'''SELECT transparency FROM dataExp WHERE id_nameExp = {self.countSelectTableRows[1]} and waveLength > 300'''
         cur.execute(sql)
-        data = cur.fetchall()
-        for k in data:
-            l.append(k[0])
-        A2 = numpy.array(l)
-        l.clear()
+        data2 = cur.fetchall()
+        data2 = [p[0] for p in data2]
+        con.close()
 
-        c = np.corrcoef(A1, A2)
-        p = c[0]
-        lblText = self.lblCorrel.text()
-        self.lblCorrel.setText(lblText + ' ' + str(round(p[1], 5)))
-
-
+        corrcoef_array = np.corrcoef(data1, data2)
+        corrcoef = round(corrcoef_array[0][1], 5)
+        self.lblCorrel.setText(self.lblCorrel.text() + str(corrcoef))
 
     @Slot()
     def about_qt(self):
@@ -245,8 +222,8 @@ class MainWindow (QMainWindow):
         QMessageBox.about(self, title, text)
 
     def drawLineChartMultiMM(self, lset):
-        self.graph.plot(lset)
+        self.graph.plot(self.countSelectTableRows)
 
     def tvNameExp_clickedMM(self):
-        self.countSelectTableRows = self.ne.tvNameExp_clicked()
+        self.countSelectTableRows = self.ne.idSelectTableNameExp
         self.drawLineChartMultiMM(self.countSelectTableRows)
