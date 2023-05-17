@@ -77,6 +77,14 @@ class dlgGroups(QDialog):
         btnAddGroup.clicked.connect(self.btnAddGroup_clicked)
         btnEditGroup.clicked.connect(self.btnEditGroup_clicked)
         btnDelGroup.clicked.connect(self.btnDelGroup_clicked)
+        self.tvGroup.doubleClicked.connect(self.tvGroup_doubleClicked)
+
+
+    def tvGroup_doubleClicked(self):
+        row = self.tvGroup.currentIndex().row()
+        i = self.tvGroup.model().record(row).value(0)
+        print(i)
+        self.accept()
 
     @Slot()
     def btnAddGroup_clicked(self):

@@ -12,6 +12,7 @@ from MainMenu import MainMenu
 from ToolBar import ToolBar
 from NameExp import NameExp
 from NameExp import MPLGraph
+from NameExp import dlgAddExp
 
 class MainWindow (QMainWindow):
     def __init__(self, parent=None):
@@ -136,13 +137,35 @@ class MainWindow (QMainWindow):
     def btnMinCalcSave_clicked(self):
         pass
 
+
     def btnMinCalc_clicked(self):
+        if len(self.countSelectTableRows) < 2:
+            QMessageBox.information(self, 'График', 'Выделите 2 строки и более')
+            return
+        # Заполняем массив 0
+        array_result = [1000]*700
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        for id_sel in self.ne.idSelectTableNameExp:
+            sql_text = f"""SELECT transparency 
+                            FROM dataExp 
+                            WHERE id_nameExp = {id_sel} and waveLength > 300"""
+            cur.execute(sql_text)
+            data = cur.fetchall()
+            for p in range(len(array_result)):
+                if data[p][0] < array_result[p]:
+                    array_result[p] = data[p][0]
+        con.close()
+        self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
+
         pass
+
 
 
     # TODO Обеспечить разный вход для загрузки файла и сохранения расченых данных
     def btnMeanCalcSave_clicked(self):
-        self.ne.addNameExpMeanCalcSave(self.arrayMeanSave)
+        dlgAddExp.filename = 'R'
+        self.ne.addNameExpCalcSave(self.arrayMeanSave)
         pass
 
     def btnMeanCalc_clicked(self):
@@ -189,6 +212,9 @@ class MainWindow (QMainWindow):
         sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_list[0])
         cur.execute(sql)
         data = cur.fetchall()
+        # list_proba = (data(p) for p in data)
+        # for p in list_proba:
+        #     print(p)
         for k in data:
             l.append(k[0])
         A1 = numpy.array(l)
@@ -203,7 +229,8 @@ class MainWindow (QMainWindow):
 
         c = np.corrcoef(A1, A2)
         p = c[0]
-        self.lblCorrel.setText(str(p))
+        lblText = self.lblCorrel.text()
+        self.lblCorrel.setText(lblText + ' ' + str(round(p[1], 5)))
 
 
 

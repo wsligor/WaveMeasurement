@@ -155,7 +155,7 @@ class NameExp(QTableView):
             self.model.add(values, dia.filename)
 
     @Slot()
-    def addNameExpMeanCalcSave(self, array):
+    def addNameExpCalcSave(self, array):
         values = []
         dia = dlgAddExp()
         if dia.exec():
@@ -340,6 +340,11 @@ class dlgAddExp(QDialog):
     def btnGroup_clicked(self):
         dlg_groups = dlgGroups()
         dlg_groups.exec()
+        # TODO Установитьь индех по двойному клику
+        # row = dlg_groups.tvGroup.currentIndex()
+        # p = dlg_groups.tvGroup.model().record(row).value(0)
+        # self.__cbGroup.setCurrentIndex(row)
+        # print(p)
         self.modelGroups.refreshGroups()
 
     def btnCategory_clicked(self):
