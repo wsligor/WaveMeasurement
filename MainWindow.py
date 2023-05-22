@@ -7,17 +7,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sqlite3 as sl
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 
 from MainMenu import MainMenu
 from ToolBar import ToolBar
 from NameExp import NameExp
-from NameExp import MPLGraph
+from MPLGraph import MPLGraph
 from NameExp import dlgAddExp
 
 class MainWindow (QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.resize(1700, 600)
+        self.resize(1700, 900)
 
         self.countSelectTableRows = []
         self.arrayMeanSave = []
@@ -32,8 +33,13 @@ class MainWindow (QMainWindow):
         self.ne.setMinimumWidth(350)
         self.ne.setMaximumWidth(350)
 
-        self.graph =MPLGraph()
-        self.graph.resize(1000, 400)
+        # self.graph =MPLGraph()
+        # self.graph.resize(1000, 400)
+
+        self.sc = MPLGraph()
+
+        tbar = NavigationToolbar(self.sc, self)
+
 
         btnOk = QPushButton('Ок', parent=self)
         btnCancel = QPushButton('Отмена', parent=self)
@@ -73,18 +79,33 @@ class MainWindow (QMainWindow):
         layVButtonCalk.addWidget(btnMaxCalcSave)
         layVButtonCalk.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+        layHButtunGraph = QHBoxLayout()
+
+        btnTwoGraph = QPushButton('Два окна', parent=self)
+
+        layHButtunGraph.addWidget(btnTwoGraph)
+        layHButtunGraph.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        layVGraphButtonCalk = QVBoxLayout()
+        # layVGraphButtonCalk.addWidget(self.graph)
+        layVGraphButtonCalk.addWidget(tbar)
+        layVGraphButtonCalk.addWidget(self.sc)
+        layVGraphButtonCalk.addLayout(layHButtunGraph)
+
         layV = QVBoxLayout(self)
 
         layHTableGraph = QHBoxLayout()
         layHTableGraph.addWidget(self.ne)
         layHTableGraph.addLayout(layVButtonCalk)
-        layHTableGraph.addWidget(self.graph)
+        layHTableGraph.addLayout(layVGraphButtonCalk)
+
 
         layV.addLayout(layHTableGraph)
 
         layH = QHBoxLayout()
         layH.addWidget(btnOk)
         layH.addWidget(btnCancel)
+        layH.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         layV.addLayout(layH)
 
@@ -110,6 +131,10 @@ class MainWindow (QMainWindow):
         btnMinCalcSave.clicked.connect(self.btnMinCalcSave_clicked)
         btnMaxCalc.clicked.connect(self.btnMaxCalc_clicked)
         btnMaxCalcSave.clicked.connect(self.btnMaxCalcSave_clicked)
+        btnTwoGraph.clicked.connect(self.btnTwoGraph_clicked)
+
+    def btnTwoGraph_clicked(self):
+        pass
 
     def btnMaxCalcSave_clicked(self):
         pass
@@ -132,7 +157,7 @@ class MainWindow (QMainWindow):
                 if data[p][0] > array_result[p]:
                     array_result[p] = data[p][0]
         con.close()
-        self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
+        self.sc.plot_meam(self.ne.idSelectTableNameExp, array_result)
 
     def btnMinCalcSave_clicked(self):
         pass
@@ -156,7 +181,7 @@ class MainWindow (QMainWindow):
                 if data[p][0] < array_result[p]:
                     array_result[p] = data[p][0]
         con.close()
-        self.graph.plot_meam(self.ne.idSelectTableNameExp, array_result)
+        self.sc.plot_meam(self.ne.idSelectTableNameExp, array_result)
 
     # TODO Обеспечить разный вход для загрузки файла и сохранения расченых данных
     def btnMeanCalcSave_clicked(self):
@@ -187,7 +212,7 @@ class MainWindow (QMainWindow):
         r = len(self.ne.idSelectTableNameExp)
         for i in range(700):
             a_result[i] = round(a_result[i]/r, 1)
-        self.graph.plot_meam(self.ne.idSelectTableNameExp, a_result)
+        self.sc.plot_meam(self.ne.idSelectTableNameExp, a_result)
         self.arrayMeanSave = a_result
 
     def btnCorrelationCalc_clicked(self):
@@ -206,10 +231,10 @@ class MainWindow (QMainWindow):
         data2 = cur.fetchall()
         data2 = [p[0] for p in data2]
         con.close()
-
+        self.lblCorrel.setText('')
         corrcoef_array = np.corrcoef(data1, data2)
         corrcoef = round(corrcoef_array[0][1], 5)
-        self.lblCorrel.setText(self.lblCorrel.text() + str(corrcoef))
+        self.lblCorrel.setText(f'Cor = :  {str(corrcoef)}')
 
     @Slot()
     def about_qt(self):
@@ -222,7 +247,7 @@ class MainWindow (QMainWindow):
         QMessageBox.about(self, title, text)
 
     def drawLineChartMultiMM(self, lset):
-        self.graph.plot(self.countSelectTableRows)
+        self.sc.plot(self.countSelectTableRows)
 
     def tvNameExp_clickedMM(self):
         self.countSelectTableRows = self.ne.idSelectTableNameExp

@@ -2,8 +2,6 @@ import os, os.path
 from typing import Any
 from datetime import date
 import sqlite3 as sl
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 import openpyxl as openpyxl
 from PySide6.QtCore import Qt, Slot, QModelIndex
@@ -479,89 +477,3 @@ class dlgAddExp(QDialog):
         self.__teDescription.setPlainText(value)
 
 
-class MPLGraph(FigureCanvasQTAgg):
-    def __init__(self):
-        self.fig = plt.figure(layout='constrained') #figsize=(2, 2),
-        self.ax = None
-        super().__init__(self.fig)
-        self.style = "seaborn-v0_8-whitegrid"
-        self.title = "Wave measurement"
-        # self.plot()
-
-
-    # TODO Провести рефакторинг кода функции
-    def plot(self, lset):
-        with plt.style.context(self.style):
-            if self.ax:
-                self.fig.delaxes(self.ax)
-            self.ax = self.fig.add_subplot(1, 1, 1)
-            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-            # self.ax.set_xlim(290, 1010)  # мин и мах координаты х
-            # self.ax.set_ylim(94, 107)  # мин и мах координаты y
-            self.ax.set_title(self.title)
-            self.ax.set_xlabel("waveLength")
-            self.ax.set_ylabel("transparency")
-            for id in lset:
-                id_x = id
-                continue
-            x = []
-            y = []
-            con = sl.connect('SFM.db')
-            cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(30)
-            cur.execute(sql)
-            rows = cur.fetchall()
-            for i in rows:
-                x.append(i[0])
-
-
-            for l in lset:
-                sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(l)
-                cur.execute(sql)
-                collumns = cur.fetchall()
-                for i in collumns:
-                    y.append(i[0])
-                self.ax.plot(x, y)
-                y.clear()
-
-            con.commit()
-            self.draw()
-
-    def plot_meam(self, lset, a_meam):
-        with plt.style.context(self.style):
-            if self.ax:
-                self.fig.delaxes(self.ax)
-            self.ax = self.fig.add_subplot(1, 1, 1)
-            self.ax.grid(color='gray', linewidth=0.5, linestyle='-')
-            # self.ax.set_xlim(290, 1010)  # мин и мах координаты х
-            # self.ax.set_ylim(94, 107)  # мин и мах координаты y
-            self.ax.set_title(self.title)
-            self.ax.set_xlabel("waveLength")
-            self.ax.set_ylabel("transparency")
-            for id in lset:
-                id_x = id
-                continue
-            x = []
-            y = []
-            con = sl.connect('SFM.db')
-            cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id_x)
-            cur.execute(sql)
-            rows = cur.fetchall()
-            for i in rows:
-                x.append(i[0])
-
-
-            for l in lset:
-                sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(l)
-                cur.execute(sql)
-                collumns = cur.fetchall()
-                for i in collumns:
-                    y.append(i[0])
-                self.ax.plot(x, y)
-                y.clear()
-
-            self.ax.plot(x, a_meam)
-
-            con.commit()
-            self.draw()
