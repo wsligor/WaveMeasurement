@@ -9,7 +9,8 @@ class MPLGraph(FigureCanvasQTAgg):
 
     def __init__(self):
         fig = Figure(layout='constrained')
-        self.axes = fig.add_subplot(111)
+        self.axes = fig.add_subplot(211)
+        self.axes2 = fig.add_subplot(212)
         super().__init__(fig)
         self.style = "seaborn-v0_8-whitegrid"
         self.title = "Wave measurement"
@@ -22,24 +23,26 @@ class MPLGraph(FigureCanvasQTAgg):
         self.axes.set_xlabel("waveLength")
         self.axes.set_ylabel("transparency")
 
-        con = sl.connect('SFM.db')
-        cur = con.cursor()
-        sql = f'''SELECT waveLength FROM dataExp WHERE id_nameExp = {30} and waveLength > 300'''
-        cur.execute(sql)
-        rows = cur.fetchall()
-        x = [r[0] for r in rows]
+        con, cur, x = self.gettingX_axis()
+        self.gettingY_axis(cur, selectsRowNameExp, x)
+        self.draw()
 
+    def gettingY_axis(self, cur, selectsRowNameExp, x):
         for sel in selectsRowNameExp:
             sql = f'''SELECT transparency FROM dataExp WHERE id_nameExp = {sel} and waveLength > 300'''
             cur.execute(sql)
             collumns = cur.fetchall()
             y = [c[0] for c in collumns]
             self.axes.plot(x, y)
-            # y.clear()
 
-        con.commit()
-        self.draw()
-        pass
+    def gettingX_axis(self):
+        con = sl.connect('SFM.db')
+        cur = con.cursor()
+        sql = f'''SELECT waveLength FROM dataExp WHERE id_nameExp = {30} and waveLength > 300'''
+        cur.execute(sql)
+        rows = cur.fetchall()
+        x = [r[0] for r in rows]
+        return con, cur, x
 
     def plot_meam(self, lset, a_meam):
         with plt.style.context(self.style):
