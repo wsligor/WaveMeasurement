@@ -1,12 +1,9 @@
-import numpy
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QToolBar, QLabel
+from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QPushButton, QHBoxLayout, QWidget, QLabel, QComboBox, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Slot, Qt
-from PySide6 import QtGui
 
-import matplotlib.pyplot as plt
 import numpy as np
 import sqlite3 as sl
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 
 from MainMenu import MainMenu
@@ -15,7 +12,8 @@ from NameExp import NameExp
 from MPLGraph import MPLGraph
 from NameExp import dlgAddExp
 
-class MainWindow (QMainWindow):
+
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(1700, 900)
@@ -29,17 +27,24 @@ class MainWindow (QMainWindow):
         tool_bar = ToolBar(parent=self)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, tool_bar)
 
-        self.ne = NameExp(parent=self)
-        self.ne.setMinimumWidth(350)
-        self.ne.setMaximumWidth(350)
+        self.tableViewNameExp = NameExp(parent=self)
+        self.tableViewNameExp.setMinimumWidth(350)
+        self.tableViewNameExp.setMaximumWidth(350)
 
-        # self.graph =MPLGraph()
-        # self.graph.resize(1000, 400)
+        self.cbSelCategory = QComboBox()
+        self.cbSelGroup = QComboBox()
 
-        self.sc = MPLGraph()
+        layHComboBox = QHBoxLayout()
+        layHComboBox.addWidget(self.cbSelCategory)
+        layHComboBox.addWidget(self.cbSelGroup)
 
-        tbar = NavigationToolbar(self.sc, self)
+        layVComboBoxTableNameExp = QVBoxLayout()
+        layVComboBoxTableNameExp.addLayout(layHComboBox)
+        layVComboBoxTableNameExp.addWidget(self.tableViewNameExp)
 
+
+        self.plotGraph = MPLGraph()
+        tbar = NavigationToolbar(self.plotGraph, self)
 
         btnOk = QPushButton('Ок', parent=self)
         btnCancel = QPushButton('Отмена', parent=self)
@@ -49,10 +54,10 @@ class MainWindow (QMainWindow):
 
         self.lblCorrel = QLabel('Cor = : ', parent=self)
 
-        btnMeanCalc = QPushButton('Показать\n среднию линию', parent=self)
+        btnMeanCalc = QPushButton('Показать\n среднею линию', parent=self)
         btnMeanCalc.setMaximumWidth(120)
 
-        btnMeanCalcSave = QPushButton('Записать\n среднию линию', parent=self)
+        btnMeanCalcSave = QPushButton('Записать\n среднею линию', parent=self)
         btnMeanCalcSave.setMaximumWidth(120)
 
         btnMinCalc = QPushButton('Показать\n линию минимума', parent=self)
@@ -79,35 +84,34 @@ class MainWindow (QMainWindow):
         layVButtonCalk.addWidget(btnMaxCalcSave)
         layVButtonCalk.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        layHButtunGraph = QHBoxLayout()
+        layHButtonGraph = QHBoxLayout()
 
         btnTwoGraph = QPushButton('Два окна', parent=self)
 
-        layHButtunGraph.addWidget(btnTwoGraph)
-        layHButtunGraph.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layHButtonGraph.addWidget(btnTwoGraph)
+        layHButtonGraph.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         layVGraphButtonCalk = QVBoxLayout()
         # layVGraphButtonCalk.addWidget(self.graph)
         layVGraphButtonCalk.addWidget(tbar)
-        layVGraphButtonCalk.addWidget(self.sc)
-        layVGraphButtonCalk.addLayout(layHButtunGraph)
+        layVGraphButtonCalk.addWidget(self.plotGraph)
+        layVGraphButtonCalk.addLayout(layHButtonGraph)
 
         layV = QVBoxLayout(self)
 
         layHTableGraph = QHBoxLayout()
-        layHTableGraph.addWidget(self.ne)
+        layHTableGraph.addLayout(layVComboBoxTableNameExp)
         layHTableGraph.addLayout(layVButtonCalk)
         layHTableGraph.addLayout(layVGraphButtonCalk)
 
-
         layV.addLayout(layHTableGraph)
 
-        layH = QHBoxLayout()
-        layH.addWidget(btnOk)
-        layH.addWidget(btnCancel)
-        layH.setAlignment(Qt.AlignmentFlag.AlignRight)
+        layHBottom = QHBoxLayout()
+        layHBottom.addWidget(btnOk)
+        layHBottom.addWidget(btnCancel)
+        layHBottom.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        layV.addLayout(layH)
+        layV.addLayout(layHBottom)
 
         container = QWidget()
         container.setLayout(layV)
@@ -117,13 +121,13 @@ class MainWindow (QMainWindow):
 
         main_menu.about_qt.triggered.connect(self.about_qt)
         main_menu.about.triggered.connect(self.about)
-        main_menu.addNameExp.triggered.connect(self.ne.addNameExp)
-        main_menu.updateNameExp.triggered.connect(self.ne.updateNameExp)
-        main_menu.deleteNameExp.triggered.connect(self.ne.deleteNameExp)
-        tool_bar.tbAdd.triggered.connect(self.ne.addNameExp)
-        tool_bar.tbEdit.triggered.connect(self.ne.updateNameExp)
-        tool_bar.tbDelete.triggered.connect(self.ne.deleteNameExp)
-        self.ne.clicked.connect(self.tvNameExp_clickedMM)
+        main_menu.addNameExp.triggered.connect(self.tableViewNameExp.addNameExp)
+        main_menu.updateNameExp.triggered.connect(self.tableViewNameExp.updateNameExp)
+        main_menu.deleteNameExp.triggered.connect(self.tableViewNameExp.deleteNameExp)
+        tool_bar.tbAdd.triggered.connect(self.tableViewNameExp.addNameExp)
+        tool_bar.tbEdit.triggered.connect(self.tableViewNameExp.updateNameExp)
+        tool_bar.tbDelete.triggered.connect(self.tableViewNameExp.deleteNameExp)
+        self.tableViewNameExp.clicked.connect(self.tvNameExp_clickedMM)
         btnCorrelationCalc.clicked.connect(self.btnCorrelationCalc_clicked)
         btnMeanCalc.clicked.connect(self.btnMeanCalc_clicked)
         btnMeanCalcSave.clicked.connect(self.btnMeanCalcSave_clicked)
@@ -144,10 +148,10 @@ class MainWindow (QMainWindow):
             QMessageBox.information(self, 'График', 'Выделите 2 строки и более')
             return
         # Заполняем массив 0
-        array_result = [0]*700
+        array_result = [0] * 700
         con = sl.connect('SFM.db')
         cur = con.cursor()
-        for id_sel in self.ne.idSelectTableNameExp:
+        for id_sel in self.tableViewNameExp.idSelectTableNameExp:
             sql_text = f"""SELECT transparency 
                             FROM dataExp 
                             WHERE id_nameExp = {id_sel} and waveLength > 300"""
@@ -157,21 +161,20 @@ class MainWindow (QMainWindow):
                 if data[p][0] > array_result[p]:
                     array_result[p] = data[p][0]
         con.close()
-        self.sc.plot_meam(self.ne.idSelectTableNameExp, array_result)
+        self.plotGraph.plot_meam(self.tableViewNameExp.idSelectTableNameExp, array_result)
 
     def btnMinCalcSave_clicked(self):
         pass
-
 
     def btnMinCalc_clicked(self):
         if len(self.countSelectTableRows) < 2:
             QMessageBox.information(self, 'График', 'Выделите 2 строки и более')
             return
         # Заполняем массив 0
-        array_result = [1000]*700
+        array_result = [1000] * 700
         con = sl.connect('SFM.db')
         cur = con.cursor()
-        for id_sel in self.ne.idSelectTableNameExp:
+        for id_sel in self.tableViewNameExp.idSelectTableNameExp:
             sql_text = f"""SELECT transparency 
                             FROM dataExp 
                             WHERE id_nameExp = {id_sel} and waveLength > 300"""
@@ -181,12 +184,12 @@ class MainWindow (QMainWindow):
                 if data[p][0] < array_result[p]:
                     array_result[p] = data[p][0]
         con.close()
-        self.sc.plot_meam(self.ne.idSelectTableNameExp, array_result)
+        self.plotGraph.plot_meam(self.tableViewNameExp.idSelectTableNameExp, array_result)
 
-    # TODO Обеспечить разный вход для загрузки файла и сохранения расченых данных
+    # TODO Обеспечить разный вход для загрузки файла и сохранения расчётных данных
     def btnMeanCalcSave_clicked(self):
         dlgAddExp.filename = 'R'
-        self.ne.addNameExpCalcSave(self.arrayMeanSave)
+        self.tableViewNameExp.addNameExpCalcSave(self.arrayMeanSave)
         pass
 
     def btnMeanCalc_clicked(self):
@@ -199,7 +202,7 @@ class MainWindow (QMainWindow):
             a_result.append(0)
         con = sl.connect('SFM.db')
         cur = con.cursor()
-        for id in self.ne.idSelectTableNameExp:
+        for id in self.tableViewNameExp.idSelectTableNameExp:
             sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(id)
             cur.execute(sql)
             data = cur.fetchall()
@@ -209,10 +212,10 @@ class MainWindow (QMainWindow):
             for i in range(lenA):
                 a_result[i] = a_result[i] + a[i]
             a.clear()
-        r = len(self.ne.idSelectTableNameExp)
+        r = len(self.tableViewNameExp.idSelectTableNameExp)
         for i in range(700):
-            a_result[i] = round(a_result[i]/r, 1)
-        self.sc.plot_meam(self.ne.idSelectTableNameExp, a_result)
+            a_result[i] = round(a_result[i] / r, 1)
+        self.plotGraph.plot_meam(self.tableViewNameExp.idSelectTableNameExp, a_result)
         self.arrayMeanSave = a_result
 
     def btnCorrelationCalc_clicked(self):
@@ -238,17 +241,17 @@ class MainWindow (QMainWindow):
 
     @Slot()
     def about_qt(self):
-        QMessageBox.aboutQt(self,'')
+        QMessageBox.aboutQt(self, '')
 
     @Slot()
     def about(self):
         title = "Анализ измерений"
-        text = "Анализ измерений спектофотометра"
+        text = "Анализ измерений спектрофотометра"
         QMessageBox.about(self, title, text)
 
     def drawLineChartMultiMM(self, lset):
-        self.sc.plot(self.countSelectTableRows)
+        self.plotGraph.plot(self.countSelectTableRows)
 
     def tvNameExp_clickedMM(self):
-        self.countSelectTableRows = self.ne.idSelectTableNameExp
+        self.countSelectTableRows = self.tableViewNameExp.idSelectTableNameExp
         self.drawLineChartMultiMM(self.countSelectTableRows)

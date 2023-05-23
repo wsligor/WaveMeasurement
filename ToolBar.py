@@ -8,7 +8,7 @@ class ToolBar(QToolBar):
         icon = QtGui.QIcon()
         self.__tbAdd = QtGui.QAction('+')
         self.addAction(self.tbAdd)
-        self.__tbUpdate = QtGui.QAction('/')
+        self.__tbUpdate = QtGui.QAction('*')
         self.addAction(self.tbEdit)
         self.__tbDelete = QtGui.QAction('-')
         self.addAction(self.tbDelete)
