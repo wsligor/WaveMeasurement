@@ -481,10 +481,10 @@ class dlgAddExp(QDialog):
 
 class MPLGraph(FigureCanvasQTAgg):
     def __init__(self):
-        self.fig = plt.figure(layout='constrained') #figsize=(2, 2),
+        self.fig = plt.figure(layout='compressed') #figsize=(2, 2),
         self.ax = None
         super().__init__(self.fig)
-        self.style = "seaborn-v0_8-whitegrid"
+        self.style = "default"
         self.title = "Wave measurement"
         # self.plot()
 
@@ -508,7 +508,7 @@ class MPLGraph(FigureCanvasQTAgg):
             y = []
             con = sl.connect('SFM.db')
             cur = con.cursor()
-            sql = '''SELECT waveLength FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(30)
+            sql = f'''SELECT waveLength FROM dataExp WHERE id_nameExp = {30} and waveLength > 300'''
             cur.execute(sql)
             rows = cur.fetchall()
             for i in rows:
