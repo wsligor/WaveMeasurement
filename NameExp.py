@@ -302,7 +302,7 @@ class dlgAddExp(QDialog):
         btnGroup.clicked.connect(self.btnGroup_clicked)
 
     def btnFileOpenclicked(self):
-        self.__filename = QFileDialog.getOpenFileName(self, 'Открыть файл', os.getcwd(), 'Excel files (*.xlsx)')[0]
+        self.__filename = QFileDialog.getOpenFileName(self, 'Открыть файл', os.getcwd(), 'Excel files (*.xlsx, *.xls)')[0]
         text = self.lblFileName.text()
         self.lblFileName.setText(text + self.__filename)
 
@@ -516,7 +516,7 @@ class MPLGraph(FigureCanvasQTAgg):
 
 
             for l in lset:
-                sql = '''SELECT transparency FROM dataExp WHERE id_nameExp = {} and waveLength > 300'''.format(l)
+                sql = f'''SELECT transparency FROM dataExp WHERE id_nameExp = {l} and waveLength > 300'''
                 cur.execute(sql)
                 collumns = cur.fetchall()
                 for i in collumns:
